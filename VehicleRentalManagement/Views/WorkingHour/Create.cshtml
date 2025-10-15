@@ -175,19 +175,31 @@
             
             <div class="row">
                 <div class="col-md-6 mb-4">
-                    @Html.LabelFor(m => m.VehicleId, new { @class = "form-label" })
+                    <label class="form-label">Araç</label>
                     <div class="input-group-icon">
                         <i class="fas fa-car"></i>
-                        @Html.DropDownListFor(m => m.VehicleId, 
-                            new SelectList(ViewBag.Vehicles, "VehicleId", "VehicleName"), 
-                            "Araç seçiniz...", 
-                            new { @class = "form-select", required = "required" })
+                        @if (ViewBag.Vehicles != null && ViewBag.Vehicles.Count > 0)
+                        {
+                            <select name="VehicleId" class="form-select" required>
+                                <option value="">Araç seçiniz...</option>
+                                @foreach (var vehicle in ViewBag.Vehicles)
+                                {
+                                    <option value="@vehicle.VehicleId">@vehicle.VehicleName</option>
+                                }
+                            </select>
+                        }
+                        else
+                        {
+                            <select class="form-select" required disabled>
+                                <option>Kayıtlı araç bulunamadı</option>
+                            </select>
+                        }
                     </div>
                     @Html.ValidationMessageFor(m => m.VehicleId, "", new { @class = "text-danger small mt-1 d-block" })
                 </div>
                 
                 <div class="col-md-6 mb-4">
-                    @Html.LabelFor(m => m.RecordDate, new { @class = "form-label" })
+                    <label class="form-label">Tarih</label>
                     <div class="input-group-icon">
                         <i class="fas fa-calendar"></i>
                         @Html.TextBoxFor(m => m.RecordDate, 
@@ -200,7 +212,7 @@
             
             <div class="row">
                 <div class="col-md-6 mb-4">
-                    @Html.LabelFor(m => m.ActiveWorkingHours, new { @class = "form-label" })
+                    <label class="form-label">Aktif Çalışma Süresi (saat)</label>
                     <div class="input-group-icon">
                         <i class="fas fa-play-circle"></i>
                         @Html.TextBoxFor(m => m.ActiveWorkingHours, 
@@ -212,7 +224,7 @@
                 </div>
                 
                 <div class="col-md-6 mb-4">
-                    @Html.LabelFor(m => m.MaintenanceHours, new { @class = "form-label" })
+                    <label class="form-label">Bakım Süresi (saat)</label>
                     <div class="input-group-icon">
                         <i class="fas fa-tools"></i>
                         @Html.TextBoxFor(m => m.MaintenanceHours, 
@@ -253,7 +265,7 @@
             </div>
             
             <div class="mb-4 mt-4">
-                @Html.LabelFor(m => m.Notes, new { @class = "form-label" })
+                <label class="form-label">Notlar</label>
                 <div class="input-group-icon">
                     <i class="fas fa-sticky-note" style="top: 1.5rem;"></i>
                     @Html.TextAreaFor(m => m.Notes, 

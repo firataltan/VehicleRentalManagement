@@ -19,28 +19,36 @@ namespace VehicleRentalManagement.DataAccess.Repositories
         {
             var vehicles = new List<Vehicle>();
 
-            using (var conn = _db.GetConnection())
+            try
             {
-                var query = @"SELECT v.*, 
-                             u1.FullName as CreatedByName, 
-                             u2.FullName as ModifiedByName
-                             FROM Vehicles v
-                             LEFT JOIN Users u1 ON v.CreatedBy = u1.UserId
-                             LEFT JOIN Users u2 ON v.ModifiedBy = u2.UserId
-                             WHERE v.IsActive = 1
-                             ORDER BY v.VehicleName";
-
-                using (var cmd = new SqlCommand(query, conn))
+                using (var conn = _db.GetConnection())
                 {
-                    conn.Open();
-                    using (var reader = cmd.ExecuteReader())
+                    var query = @"SELECT v.*, 
+                                 u1.FullName as CreatedByName, 
+                                 u2.FullName as ModifiedByName
+                                 FROM Vehicles v
+                                 LEFT JOIN Users u1 ON v.CreatedBy = u1.UserId
+                                 LEFT JOIN Users u2 ON v.ModifiedBy = u2.UserId
+                                 WHERE v.IsActive = 1
+                                 ORDER BY v.VehicleName";
+
+                    using (var cmd = new SqlCommand(query, conn))
                     {
-                        while (reader.Read())
+                        conn.Open();
+                        using (var reader = cmd.ExecuteReader())
                         {
-                            vehicles.Add(MapToVehicle(reader));
+                            while (reader.Read())
+                            {
+                                vehicles.Add(MapToVehicle(reader));
+                            }
                         }
                     }
                 }
+            }
+            catch (Exception ex)
+            {
+                // Log the exception if needed
+                throw new Exception("Araç listesi yüklenirken hata oluştu: " + ex.Message, ex);
             }
 
             return vehicles;

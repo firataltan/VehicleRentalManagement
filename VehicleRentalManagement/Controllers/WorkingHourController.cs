@@ -37,14 +37,30 @@ namespace VehicleRentalManagement.Controllers
                 return RedirectToAction("AccessDenied", "Account");
             }
 
-            ViewBag.Vehicles = new SelectList(_vehicleRepo.GetAll(), "VehicleId", "VehicleName");
-
-            var model = new WorkingHour
+            try
             {
-                RecordDate = DateTime.Today
-            };
+                var vehicles = _vehicleRepo.GetAll();
+                if (vehicles == null || !vehicles.Any())
+                {
+                    TempData["ErrorMessage"] = "Kayıtlı araç bulunamadı. Önce araç eklemeniz gerekiyor.";
+                    return RedirectToAction("Index", "Vehicle");
+                }
 
-            return View(model);
+                // ViewBag.Vehicles'ı direkt liste olarak gönder
+                ViewBag.Vehicles = vehicles.ToList();
+
+                var model = new WorkingHour
+                {
+                    RecordDate = DateTime.Today
+                };
+
+                return View(model);
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = "Araç listesi yüklenirken hata oluştu: " + ex.Message;
+                return RedirectToAction("Index", "Home");
+            }
         }
 
         // POST: WorkingHour/Create
