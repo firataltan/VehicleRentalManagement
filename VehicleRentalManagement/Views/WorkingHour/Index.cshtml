@@ -1,0 +1,314 @@
+﻿@model IEnumerable<VehicleRentalManagement.Models.WorkingHour>
+@{
+    ViewBag.Title = "Çalışma Süreleri";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+    .page-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 20px;
+        padding: 2rem 2.5rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 8px 32px rgba(102, 126, 234, 0.3);
+    }
+
+    .filter-card {
+        background: white;
+        border-radius: 16px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    }
+
+    .table-card {
+        background: white;
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    }
+
+    .record-row {
+        transition: all 0.3s ease;
+        border-left: 4px solid transparent;
+    }
+
+        .record-row:hover {
+            background: linear-gradient(90deg, rgba(102, 126, 234, 0.05) 0%, transparent 100%);
+            border-left-color: #667eea;
+            transform: translateX(5px);
+        }
+
+    .status-badge {
+        padding: 0.4rem 1rem;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+
+    .status-active {
+        background: linear-gradient(135deg, #48bb78 0%, #38b2ac 100%);
+        color: white;
+    }
+
+    .status-maintenance {
+        background: linear-gradient(135deg, #f6ad55 0%, #fc8181 100%);
+        color: white;
+    }
+
+    .status-idle {
+        background: linear-gradient(135deg, #cbd5e0 0%, #a0aec0 100%);
+        color: white;
+    }
+
+    .hours-display {
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+    }
+
+    .hour-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        background: #f7fafc;
+        border-radius: 8px;
+        font-weight: 600;
+    }
+
+        .hour-item i {
+            font-size: 1.1rem;
+        }
+
+        .hour-item.active i {
+            color: #48bb78;
+        }
+
+        .hour-item.maintenance i {
+            color: #f6ad55;
+        }
+
+        .hour-item.idle i {
+            color: #a0aec0;
+        }
+
+    .action-btn {
+        width: 36px;
+        height: 36px;
+        padding: 0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+        margin: 0 0.25rem;
+    }
+
+        .action-btn:hover {
+            transform: scale(1.1);
+        }
+
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+    }
+
+        .empty-state i {
+            font-size: 5rem;
+            color: #e2e8f0;
+            margin-bottom: 1rem;
+        }
+</style>
+
+<div class="page-header">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h2 class="mb-2"><i class="fas fa-clock me-2"></i>Çalışma Süreleri Yönetimi</h2>
+            <p class="mb-0 opacity-75">Araçların günlük çalışma sürelerini görüntüleyin ve yönetin</p>
+        </div>
+        <a href="@Url.Action("Create")" class="btn btn-light btn-lg">
+            <i class="fas fa-plus-circle me-2"></i>Yeni Kayıt Ekle
+        </a>
+    </div>
+</div>
+
+<div class="filter-card">
+    <div class="row align-items-end">
+        <div class="col-md-3">
+            <label class="form-label"><i class="fas fa-calendar me-2"></i>Başlangıç Tarihi</label>
+            <input type="date" id="filterStartDate" class="form-control" value="@DateTime.Today.AddDays(-7).ToString("yyyy-MM-dd")">
+        </div>
+        <div class="col-md-3">
+            <label class="form-label"><i class="fas fa-calendar me-2"></i>Bitiş Tarihi</label>
+            <input type="date" id="filterEndDate" class="form-control" value="@DateTime.Today.ToString("yyyy-MM-dd")">
+        </div>
+        <div class="col-md-4">
+            <label class="form-label"><i class="fas fa-car me-2"></i>Araç</label>
+            <select id="filterVehicle" class="form-select">
+                <option value="">Tüm Araçlar</option>
+                @foreach (var vehicle in ViewBag.Vehicles as IEnumerable<VehicleRentalManagement.Models.Vehicle> ?? Enumerable.Empty<VehicleRentalManagement.Models.Vehicle>())
+                {
+                    <option value="@vehicle.VehicleId">@vehicle.VehicleName - @vehicle.LicensePlate</option>
+                }
+            </select>
+        </div>
+        <div class="col-md-2">
+            <button type="button" class="btn btn-primary w-100" onclick="filterRecords()">
+                <i class="fas fa-search me-2"></i>Filtrele
+            </button>
+        </div>
+    </div>
+</div>
+
+@if (Model != null && Model.Any())
+{
+    <div class="table-card">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                    <tr>
+                        <th style="width: 100px;">Tarih</th>
+                        <th>Araç</th>
+                        <th>Plaka</th>
+                        <th style="width: 350px;">Çalışma Süreleri</th>
+                        <th>Notlar</th>
+                        <th>Kaydeden</th>
+                        <th style="width: 120px;">İşlemler</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var record in Model)
+                    {
+                        <tr class="record-row">
+                            <td>
+                                <strong>@record.RecordDate.ToString("dd.MM.yyyy")</strong>
+                                <br>
+                                <small class="text-muted">@record.RecordDate.ToString("dddd")</small>
+                            </td>
+                            <td>
+                                <strong>@record.VehicleName</strong>
+                            </td>
+                            <td>
+                                <span class="badge" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); font-size: 0.9rem;">
+                                    @record.LicensePlate
+                                </span>
+                            </td>
+                            <td>
+                                <div class="hours-display">
+                                    <div class="hour-item active" title="Aktif Çalışma">
+                                        <i class="fas fa-play-circle"></i>
+                                        <span>@record.ActiveWorkingHours.ToString("F1")h</span>
+                                    </div>
+                                    <div class="hour-item maintenance" title="Bakım">
+                                        <i class="fas fa-tools"></i>
+                                        <span>@record.MaintenanceHours.ToString("F1")h</span>
+                                    </div>
+                                    <div class="hour-item idle" title="Boşta">
+                                        <i class="fas fa-pause-circle"></i>
+                                        <span>@record.IdleHours.ToString("F1")h</span>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                @if (!string.IsNullOrEmpty(record.Notes))
+                                {
+                                    <span title="@record.Notes">
+                                        @(record.Notes.Length > 30 ? record.Notes.Substring(0, 30) + "..." : record.Notes)
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">-</span>
+                                }
+                            </td>
+                            <td>
+                                <i class="fas fa-user-circle me-1"></i>
+                                @record.CreatedByName
+                                <br>
+                                <small class="text-muted">@record.CreatedDate.ToString("dd.MM.yyyy HH:mm")</small>
+                            </td>
+                            <td>
+                                <a href="@Url.Action("Edit", new { id = record.WorkingHourId })"
+                                   class="btn btn-warning action-btn"
+                                   title="Düzenle">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <button type="button"
+                                        class="btn btn-danger action-btn delete-btn"
+                                        data-id="@record.WorkingHourId"
+                                        data-vehicle="@record.VehicleName"
+                                        data-date="@record.RecordDate.ToString("dd.MM.yyyy")"
+                                        title="Sil">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}
+else
+{
+    <div class="table-card">
+        <div class="empty-state">
+            <i class="fas fa-clipboard-list"></i>
+            <h4>Henüz çalışma süresi kaydı eklenmemiş</h4>
+            <p class="text-muted mb-4">Yeni bir kayıt eklemek için yukarıdaki butona tıklayın.</p>
+            <a href="@Url.Action("Create")" class="btn btn-primary">
+                <i class="fas fa-plus-circle me-2"></i>İlk Kaydı Ekle
+            </a>
+        </div>
+    </div>
+}
+
+@section scripts {
+    <script>
+        $(document).ready(function () {
+            // Delete button click
+            $('.delete-btn').click(function () {
+                var id = $(this).data('id');
+                var vehicle = $(this).data('vehicle');
+                var date = $(this).data('date');
+
+                if (confirm('Bu kaydı silmek istediğinizden emin misiniz?\n\nAraç: ' + vehicle + '\nTarih: ' + date)) {
+                    $.ajax({
+                        url: '@Url.Action("Delete", "WorkingHour")',
+                        type: 'POST',
+                        data: {
+                            id: id,
+                            __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+                        },
+                        success: function (response) {
+                            if (response.success) {
+                                location.reload();
+                            } else {
+                                alert('Hata: ' + response.message);
+                            }
+                        },
+                        error: function () {
+                            alert('İşlem sırasında bir hata oluştu!');
+                        }
+                    });
+                }
+            });
+        });
+
+        function filterRecords() {
+            var startDate = $('#filterStartDate').val();
+            var endDate = $('#filterEndDate').val();
+            var vehicleId = $('#filterVehicle').val();
+
+            var url = '@Url.Action("Index", "WorkingHour")' + '?';
+            if (startDate) url += 'startDate=' + startDate + '&';
+            if (endDate) url += 'endDate=' + endDate + '&';
+            if (vehicleId) url += 'vehicleId=' + vehicleId;
+
+            window.location.href = url;
+        }
+    </script>
+    @Html.AntiForgeryToken()
+}

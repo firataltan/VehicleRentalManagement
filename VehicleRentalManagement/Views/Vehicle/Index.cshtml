@@ -1,0 +1,220 @@
+﻿@model IEnumerable<VehicleRentalManagement.Models.Vehicle>
+@{
+    ViewBag.Title = "Araç Yönetimi";
+}
+
+<style>
+    .page-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 20px;
+        padding: 2rem 2.5rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 8px 32px rgba(102, 126, 234, 0.3);
+    }
+
+    .vehicle-card {
+        background: white;
+        border-radius: 16px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        border: 2px solid rgba(102, 126, 234, 0.1);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+        .vehicle-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 5px;
+            height: 100%;
+            background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+            transform: scaleY(0);
+            transition: transform 0.3s ease;
+        }
+
+        .vehicle-card:hover::before {
+            transform: scaleY(1);
+        }
+
+        .vehicle-card:hover {
+            border-color: #667eea;
+            transform: translateX(10px);
+            box-shadow: 0 8px 24px rgba(102, 126, 234, 0.2);
+        }
+
+    .vehicle-icon {
+        width: 60px;
+        height: 60px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        color: white;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    }
+
+    .vehicle-info h4 {
+        font-weight: 700;
+        color: #2d3748;
+        margin-bottom: 0.5rem;
+    }
+
+    .vehicle-plate {
+        display: inline-block;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 0.35rem 1rem;
+        border-radius: 8px;
+        font-weight: 700;
+        font-size: 1rem;
+        letter-spacing: 2px;
+    }
+
+    .vehicle-meta {
+        display: flex;
+        gap: 1.5rem;
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid #e2e8f0;
+    }
+
+    .meta-item {
+        display: flex;
+        align-items: center;
+        color: #718096;
+        font-size: 0.85rem;
+    }
+
+        .meta-item i {
+            margin-right: 0.5rem;
+            color: #667eea;
+        }
+
+    .action-buttons {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .btn-icon {
+        width: 40px;
+        height: 40px;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 10px;
+        transition: all 0.3s ease;
+    }
+
+        .btn-icon:hover {
+            transform: scale(1.1) rotate(5deg);
+        }
+</style>
+
+<div class="page-header">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h2 class="mb-2"><i class="fas fa-car me-2"></i>Araç Yönetimi</h2>
+            <p class="mb-0 opacity-75">Araçları görüntüleyin, ekleyin ve düzenleyin</p>
+        </div>
+        <a href="@Url.Action("Create")" class="btn btn-light btn-lg">
+            <i class="fas fa-plus-circle me-2"></i>Yeni Araç Ekle
+        </a>
+    </div>
+</div>
+
+@if (Model != null && Model.Any())
+{
+    <div class="row">
+        @foreach (var vehicle in Model)
+        {
+            <div class="col-lg-6 col-xl-4">
+                <div class="vehicle-card">
+                    <div class="d-flex align-items-start">
+                        <div class="vehicle-icon me-3">
+                            <i class="fas fa-car"></i>
+                        </div>
+                        <div class="vehicle-info flex-grow-1">
+                            <h4>@vehicle.VehicleName</h4>
+                            <span class="vehicle-plate">@vehicle.LicensePlate</span>
+
+                            <div class="vehicle-meta">
+                                <div class="meta-item">
+                                    <i class="fas fa-user-plus"></i>
+                                    <span>@vehicle.CreatedByName</span>
+                                </div>
+                                <div class="meta-item">
+                                    <i class="fas fa-calendar"></i>
+                                    <span>@vehicle.CreatedDate.ToString("dd.MM.yyyy")</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="action-buttons">
+                            <a href="@Url.Action("Edit", new { id = vehicle.VehicleId })"
+                               class="btn btn-warning btn-icon"
+                               title="Düzenle">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <button type="button"
+                                    class="btn btn-danger btn-icon delete-btn"
+                                    data-id="@vehicle.VehicleId"
+                                    data-name="@vehicle.VehicleName"
+                                    title="Sil">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+else
+{
+    <div class="card">
+        <div class="card-body text-center py-5">
+            <i class="fas fa-inbox fa-4x text-muted mb-3"></i>
+            <h4>Henüz araç eklenmemiş</h4>
+            <p class="text-muted">Yeni bir araç eklemek için yukarıdaki butona tıklayın.</p>
+        </div>
+    </div>
+}
+
+@section scripts {
+    <script>
+        $(document).ready(function () {
+            $('.delete-btn').click(function () {
+                var vehicleId = $(this).data('id');
+                var vehicleName = $(this).data('name');
+
+                if (confirm('Bu aracı silmek istediğinizden emin misiniz?\n\nAraç: ' + vehicleName)) {
+                    $.ajax({
+                        url: '@Url.Action("Delete", "Vehicle")',
+                        type: 'POST',
+                        data: {
+                            id: vehicleId,
+                            __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+                        },
+                        success: function (response) {
+                            if (response.success) {
+                                location.reload();
+                            } else {
+                                alert('Hata: ' + response.message);
+                            }
+                        },
+                        error: function () {
+                            alert('İşlem sırasında bir hata oluştu!');
+                        }
+                    });
+                }
+            });
+        });
+    </script>
+    @Html.AntiForgeryToken()
+}

@@ -1,0 +1,270 @@
+﻿@{
+    ViewBag.Title = "Boşta Bekleme Süreleri Grafiği";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+    .chart-page {
+        background: white;
+        border-radius: 20px;
+        padding: 2.5rem;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    }
+
+    .chart-header {
+        text-align: center;
+        margin-bottom: 3rem;
+        padding-bottom: 2rem;
+        border-bottom: 2px solid #e2e8f0;
+    }
+
+        .chart-header h2 {
+            font-weight: 800;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+    .chart-wrapper {
+        position: relative;
+        height: 500px;
+        margin-bottom: 2rem;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-box {
+        background: linear-gradient(135deg, rgba(240, 147, 251, 0.1) 0%, rgba(245, 87, 108, 0.1) 100%);
+        border-radius: 12px;
+        padding: 1.5rem;
+        text-align: center;
+        border: 2px solid rgba(240, 147, 251, 0.2);
+        transition: all 0.3s ease;
+    }
+
+        .stat-box:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 24px rgba(240, 147, 251, 0.2);
+        }
+
+        .stat-box i {
+            font-size: 2rem;
+            color: #f5576c;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-box .value {
+            font-size: 2rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .stat-box .label {
+            color: #718096;
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+</style>
+
+<div class="chart-page">
+    <div class="chart-header">
+        <h2><i class="fas fa-chart-pie me-2"></i>Boşta Bekleme Süreleri (Haftalık)</h2>
+        <p class="text-muted mb-0">Araçların haftalık boşta bekleme süreleri yüzdesel olarak</p>
+    </div>
+
+    <div class="stats-grid" id="statsGrid">
+        <!-- JavaScript ile doldurulacak -->
+    </div>
+
+    <div class="chart-wrapper">
+        <canvas id="idleHoursChart"></canvas>
+    </div>
+
+    <div class="alert alert-warning">
+        <i class="fas fa-exclamation-triangle me-2"></i>
+        <strong>Uyarı:</strong> Yüksek boşta bekleme süreleri, araç kullanım verimliliğinin düşük olduğunu gösterir.
+        Boşta bekleme süresi = 168 saat - (Aktif çalışma + Bakım süreleri)
+    </div>
+
+    <div class="text-center">
+        <a href="@Url.Action("Index", "Home")" class="btn btn-primary me-2">
+            <i class="fas fa-home me-2"></i>Ana Sayfaya Dön
+        </a>
+        <a href="@Url.Action("ActiveHours", "Chart")" class="btn btn-info">
+            <i class="fas fa-chart-bar me-2"></i>Aktif Çalışma Grafiği
+        </a>
+    </div>
+</div>
+
+@section scripts {
+    <script>
+        $(document).ready(function () {
+            $.ajax({
+                url: '@Url.Action("GetIdleHoursData", "Chart")',
+                type: 'GET',
+                success: function (response) {
+                    if (response.success) {
+                        createStatsBoxes(response.data);
+                        createChart(response.data);
+                    } else {
+                        alert('Veri yüklenirken hata oluştu!');
+                    }
+                },
+                error: function () {
+                    alert('Sunucuya bağlanırken hata oluştu!');
+                }
+            });
+
+            function createStatsBoxes(data) {
+                var totalIdleHours = data.reduce((sum, item) => sum + item.idleHours, 0);
+                var avgIdlePercentage = data.reduce((sum, item) => sum + item.idlePercentage, 0) / data.length;
+                var maxIdleVehicle = data.reduce((max, item) => item.idlePercentage > max.idlePercentage ? item : max, data[0]);
+                var minIdleVehicle = data.reduce((min, item) => item.idlePercentage < min.idlePercentage ? item : min, data[0]);
+
+                var html = `
+                        <div class="stat-box">
+                            <i class="fas fa-clock"></i>
+                            <div class="value">${totalIdleHours.toFixed(1)}</div>
+                            <div class="label">Toplam Boşta Saat</div>
+                        </div>
+                        <div class="stat-box">
+                            <i class="fas fa-percentage"></i>
+                            <div class="value">${avgIdlePercentage.toFixed(1)}%</div>
+                            <div class="label">Ortalama Boşta</div>
+                        </div>
+                        <div class="stat-box">
+                            <i class="fas fa-arrow-up"></i>
+                            <div class="value">${maxIdleVehicle.idlePercentage.toFixed(1)}%</div>
+                            <div class="label">${maxIdleVehicle.vehicleName}</div>
+                        </div>
+                        <div class="stat-box">
+                            <i class="fas fa-arrow-down"></i>
+                            <div class="value">${minIdleVehicle.idlePercentage.toFixed(1)}%</div>
+                            <div class="label">${minIdleVehicle.vehicleName}</div>
+                        </div>
+                    `;
+
+                $('#statsGrid').html(html);
+            }
+
+            function createChart(data) {
+                var ctx = document.getElementById('idleHoursChart').getContext('2d');
+
+                var labels = data.map(d => d.vehicleName + ' (' + d.licensePlate + ')');
+                var percentages = data.map(d => d.idlePercentage);
+                var hours = data.map(d => d.idleHours);
+
+                // Gradient colors for doughnut chart
+                var backgroundColors = [
+                    'rgba(240, 147, 251, 0.8)',
+                    'rgba(245, 87, 108, 0.8)',
+                    'rgba(250, 112, 154, 0.8)',
+                    'rgba(254, 225, 64, 0.8)',
+                    'rgba(79, 172, 254, 0.8)',
+                    'rgba(0, 242, 254, 0.8)',
+                    'rgba(102, 126, 234, 0.8)',
+                    'rgba(118, 75, 162, 0.8)'
+                ];
+
+                var borderColors = [
+                    'rgba(240, 147, 251, 1)',
+                    'rgba(245, 87, 108, 1)',
+                    'rgba(250, 112, 154, 1)',
+                    'rgba(254, 225, 64, 1)',
+                    'rgba(79, 172, 254, 1)',
+                    'rgba(0, 242, 254, 1)',
+                    'rgba(102, 126, 234, 1)',
+                    'rgba(118, 75, 162, 1)'
+                ];
+
+                new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            data: percentages,
+                            backgroundColor: backgroundColors.slice(0, data.length),
+                            borderColor: borderColors.slice(0, data.length),
+                            borderWidth: 3,
+                            hoverOffset: 20
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'right',
+                                labels: {
+                                    usePointStyle: true,
+                                    padding: 20,
+                                    font: {
+                                        size: 13,
+                                        weight: '600',
+                                        family: "'Inter', sans-serif"
+                                    },
+                                    generateLabels: function (chart) {
+                                        const data = chart.data;
+                                        if (data.labels.length && data.datasets.length) {
+                                            return data.labels.map((label, i) => {
+                                                const value = data.datasets[0].data[i];
+                                                return {
+                                                    text: label + ' - ' + value.toFixed(1) + '%',
+                                                    fillStyle: data.datasets[0].backgroundColor[i],
+                                                    hidden: false,
+                                                    index: i
+                                                };
+                                            });
+                                        }
+                                        return [];
+                                    }
+                                }
+                            },
+                            tooltip: {
+                                backgroundColor: 'rgba(0, 0, 0, 0.9)',
+                                padding: 16,
+                                cornerRadius: 10,
+                                titleFont: {
+                                    size: 15,
+                                    weight: '700'
+                                },
+                                bodyFont: {
+                                    size: 14
+                                },
+                                callbacks: {
+                                    label: function (context) {
+                                        var index = context.dataIndex;
+                                        return [
+                                            'Yüzde: ' + percentages[index].toFixed(1) + '%',
+                                            'Saat: ' + hours[index].toFixed(1) + ' / 168 saat',
+                                            '',
+                                            'Verimlilik: ' + (100 - percentages[index]).toFixed(1) + '%'
+                                        ];
+                                    }
+                                }
+                            }
+                        },
+                        animation: {
+                            duration: 2000,
+                            easing: 'easeInOutQuart',
+                            animateRotate: true,
+                            animateScale: true
+                        },
+                        cutout: '60%',
+                        radius: '90%'
+                    }
+                });
+            }
+        });
+    </script>
+}

@@ -1,0 +1,159 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Data.SqlClient;
+using VehicleRentalManagement.Models;
+
+namespace VehicleRentalManagement.DataAccess.Repositories
+{
+    public class VehicleRepository : IRepository<Vehicle>
+    {
+        private readonly DatabaseConnection _db;
+
+        public VehicleRepository()
+        {
+            _db = new DatabaseConnection();
+        }
+
+        public IEnumerable<Vehicle> GetAll()
+        {
+            var vehicles = new List<Vehicle>();
+
+            using (var conn = _db.GetConnection())
+            {
+                var query = @"SELECT v.*, 
+                             u1.FullName as CreatedByName, 
+                             u2.FullName as ModifiedByName
+                             FROM Vehicles v
+                             LEFT JOIN Users u1 ON v.CreatedBy = u1.UserId
+                             LEFT JOIN Users u2 ON v.ModifiedBy = u2.UserId
+                             WHERE v.IsActive = 1
+                             ORDER BY v.VehicleName";
+
+                using (var cmd = new SqlCommand(query, conn))
+                {
+                    conn.Open();
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            vehicles.Add(MapToVehicle(reader));
+                        }
+                    }
+                }
+            }
+
+            return vehicles;
+        }
+
+        public Vehicle GetById(int id)
+        {
+            Vehicle vehicle = null;
+
+            using (var conn = _db.GetConnection())
+            {
+                var query = @"SELECT v.*, 
+                             u1.FullName as CreatedByName, 
+                             u2.FullName as ModifiedByName
+                             FROM Vehicles v
+                             LEFT JOIN Users u1 ON v.CreatedBy = u1.UserId
+                             LEFT JOIN Users u2 ON v.ModifiedBy = u2.UserId
+                             WHERE v.VehicleId = @VehicleId";
+
+                using (var cmd = new SqlCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue("@VehicleId", id);
+                    conn.Open();
+
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            vehicle = MapToVehicle(reader);
+                        }
+                    }
+                }
+            }
+
+            return vehicle;
+        }
+
+        public int Add(Vehicle entity)
+        {
+            using (var conn = _db.GetConnection())
+            {
+                var query = @"INSERT INTO Vehicles (VehicleName, LicensePlate, CreatedBy, CreatedDate)
+                             VALUES (@VehicleName, @LicensePlate, @CreatedBy, @CreatedDate);
+                             SELECT CAST(SCOPE_IDENTITY() as int)";
+
+                using (var cmd = new SqlCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue("@VehicleName", entity.VehicleName);
+                    cmd.Parameters.AddWithValue("@LicensePlate", entity.LicensePlate);
+                    cmd.Parameters.AddWithValue("@CreatedBy", entity.CreatedBy);
+                    cmd.Parameters.AddWithValue("@CreatedDate", DateTime.Now);
+
+                    conn.Open();
+                    return (int)cmd.ExecuteScalar();
+                }
+            }
+        }
+
+        public bool Update(Vehicle entity)
+        {
+            using (var conn = _db.GetConnection())
+            {
+                var query = @"UPDATE Vehicles 
+                             SET VehicleName = @VehicleName, 
+                                 LicensePlate = @LicensePlate,
+                                 ModifiedBy = @ModifiedBy,
+                                 ModifiedDate = @ModifiedDate
+                             WHERE VehicleId = @VehicleId";
+
+                using (var cmd = new SqlCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue("@VehicleId", entity.VehicleId);
+                    cmd.Parameters.AddWithValue("@VehicleName", entity.VehicleName);
+                    cmd.Parameters.AddWithValue("@LicensePlate", entity.LicensePlate);
+                    cmd.Parameters.AddWithValue("@ModifiedBy", entity.ModifiedBy);
+                    cmd.Parameters.AddWithValue("@ModifiedDate", DateTime.Now);
+
+                    conn.Open();
+                    return cmd.ExecuteNonQuery() > 0;
+                }
+            }
+        }
+
+        public bool Delete(int id)
+        {
+            using (var conn = _db.GetConnection())
+            {
+                var query = "UPDATE Vehicles SET IsActive = 0 WHERE VehicleId = @VehicleId";
+
+                using (var cmd = new SqlCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue("@VehicleId", id);
+                    conn.Open();
+                    return cmd.ExecuteNonQuery() > 0;
+                }
+            }
+        }
+
+        private Vehicle MapToVehicle(SqlDataReader reader)
+        {
+            return new Vehicle
+            {
+                VehicleId = reader.GetInt32(reader.GetOrdinal("VehicleId")),
+                VehicleName = reader.GetString(reader.GetOrdinal("VehicleName")),
+                LicensePlate = reader.GetString(reader.GetOrdinal("LicensePlate")),
+                IsActive = reader.GetBoolean(reader.GetOrdinal("IsActive")),
+                CreatedBy = reader.GetInt32(reader.GetOrdinal("CreatedBy")),
+                CreatedDate = reader.GetDateTime(reader.GetOrdinal("CreatedDate")),
+                ModifiedBy = reader.IsDBNull(reader.GetOrdinal("ModifiedBy")) ? (int?)null : reader.GetInt32(reader.GetOrdinal("ModifiedBy")),
+                ModifiedDate = reader.IsDBNull(reader.GetOrdinal("ModifiedDate")) ? (DateTime?)null : reader.GetDateTime(reader.GetOrdinal("ModifiedDate")),
+                CreatedByName = reader.IsDBNull(reader.GetOrdinal("CreatedByName")) ? "" : reader.GetString(reader.GetOrdinal("CreatedByName")),
+                ModifiedByName = reader.IsDBNull(reader.GetOrdinal("ModifiedByName")) ? "" : reader.GetString(reader.GetOrdinal("ModifiedByName"))
+            };
+        }
+    }
+}

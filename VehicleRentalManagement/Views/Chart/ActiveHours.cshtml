@@ -1,0 +1,169 @@
+﻿@{
+    ViewBag.Title = "Aktif Çalışma Süreleri Grafiği";
+}
+
+<style>
+    .chart-page {
+        background: white;
+        border-radius: 20px;
+        padding: 2.5rem;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    }
+
+    .chart-header {
+        text-align: center;
+        margin-bottom: 3rem;
+        padding-bottom: 2rem;
+        border-bottom: 2px solid #e2e8f0;
+    }
+
+        .chart-header h2 {
+            font-weight: 800;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+    .chart-wrapper {
+        position: relative;
+        height: 500px;
+        margin-bottom: 2rem;
+    }
+</style>
+
+<div class="chart-page">
+    <div class="chart-header">
+        <h2><i class="fas fa-chart-bar me-2"></i>Aktif Çalışma Süreleri (Haftalık)</h2>
+        <p class="text-muted mb-0">Araçların haftalık aktif çalışma süreleri yüzdesel olarak</p>
+    </div>
+
+    <div class="chart-wrapper">
+        <canvas id="activeHoursChart"></canvas>
+    </div>
+
+    <div class="alert alert-info">
+        <i class="fas fa-info-circle me-2"></i>
+        <strong>Not:</strong> Grafikte araçların son 7 gündeki toplam aktif çalışma süreleri yüzde olarak gösterilmektedir.
+        Toplam haftalık süre 168 saat (7 gün x 24 saat) üzerinden hesaplanmıştır.
+    </div>
+
+    <div class="text-center">
+        <a href="@Url.Action("Index", "Home")" class="btn btn-primary">
+            <i class="fas fa-home me-2"></i>Ana Sayfaya Dön
+        </a>
+    </div>
+</div>
+
+@section scripts {
+    <script>
+        $(document).ready(function () {
+            $.ajax({
+                url: '@Url.Action("GetActiveHoursData", "Chart")',
+                type: 'GET',
+                success: function (response) {
+                    if (response.success) {
+                        createChart(response.data);
+                    } else {
+                        alert('Veri yüklenirken hata oluştu!');
+                    }
+                },
+                error: function () {
+                    alert('Sunucuya bağlanırken hata oluştu!');
+                }
+            });
+
+            function createChart(data) {
+                var ctx = document.getElementById('activeHoursChart').getContext('2d');
+                var gradient = ctx.createLinearGradient(0, 0, 0, 500);
+                gradient.addColorStop(0, 'rgba(102, 126, 234, 0.9)');
+                gradient.addColorStop(1, 'rgba(118, 75, 162, 0.9)');
+
+                var labels = data.map(d => d.vehicleName + ' (' + d.licensePlate + ')');
+                var percentages = data.map(d => d.activePercentage);
+                var hours = data.map(d => d.activeHours);
+
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Aktif Çalışma Yüzdesi',
+                            data: percentages,
+                            backgroundColor: gradient,
+                            borderColor: '#667eea',
+                            borderWidth: 3,
+                            borderRadius: 12,
+                            borderSkipped: false
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            tooltip: {
+                                backgroundColor: 'rgba(0, 0, 0, 0.9)',
+                                padding: 16,
+                                cornerRadius: 10,
+                                titleFont: {
+                                    size: 15,
+                                    weight: '700'
+                                },
+                                bodyFont: {
+                                    size: 14
+                                },
+                                callbacks: {
+                                    label: function (context) {
+                                        var index = context.dataIndex;
+                                        return [
+                                            'Yüzde: ' + percentages[index].toFixed(1) + '%',
+                                            'Saat: ' + hours[index].toFixed(1) + ' / 168 saat'
+                                        ];
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                max: 100,
+                                ticks: {
+                                    callback: function (value) {
+                                        return value + '%';
+                                    },
+                                    font: {
+                                        size: 13,
+                                        weight: '600'
+                                    }
+                                },
+                                grid: {
+                                    color: 'rgba(0, 0, 0, 0.05)'
+                                }
+                            },
+                            x: {
+                                ticks: {
+                                    font: {
+                                        size: 12,
+                                        weight: '600'
+                                    },
+                                    maxRotation: 45,
+                                    minRotation: 45
+                                },
+                                grid: {
+                                    display: false
+                                }
+                            }
+                        },
+                        animation: {
+                            duration: 2000,
+                            easing: 'easeInOutQuart'
+                        }
+                    }
+                });
+            }
+        });
+    </script>
+}
