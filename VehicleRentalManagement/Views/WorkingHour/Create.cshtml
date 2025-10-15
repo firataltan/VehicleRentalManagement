@@ -170,8 +170,7 @@
             Boşta bekleme süresi otomatik hesaplanacaktır.
         </div>
         
-        @using (Html.BeginForm("Create", "WorkingHour", FormMethod.Post, new { @class = "needs-validation", id = "workingHourForm" }))
-        {
+        <form asp-action="Create" asp-controller="WorkingHour" method="post" class="needs-validation" id="workingHourForm">
             @Html.AntiForgeryToken()
             
             <div class="row">
@@ -271,7 +270,7 @@
                     <i class="fas fa-times me-2"></i>İptal
                 </a>
             </div>
-        }
+        </form>
     </div>
 </div>
 

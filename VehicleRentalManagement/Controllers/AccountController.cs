@@ -1,9 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
-using System.Web;
-//using System.Web.Mvc;
-//using System.Web.Security;
 using VehicleRentalManagement.DataAccess.Repositories;
 using VehicleRentalManagement.Models.ViewModels;
 using Microsoft.AspNetCore.Authentication;
@@ -34,7 +31,7 @@ namespace VehicleRentalManagement.Controllers
         [HttpPost]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Login(LoginViewModel model, string returnUrl)
+        public async Task<IActionResult> Login(LoginViewModel model)
         {
             if (ModelState.IsValid)
             {
@@ -65,9 +62,9 @@ namespace VehicleRentalManagement.Controllers
                         new ClaimsPrincipal(claimsIdentity),
                         authProperties);
 
-                    // Yönlendirme
-                    if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
-                        return Redirect(returnUrl);
+                    // Yönlendirme - model'den returnUrl'i al
+                    if (!string.IsNullOrEmpty(model.ReturnUrl) && Url.IsLocalUrl(model.ReturnUrl))
+                        return Redirect(model.ReturnUrl);
 
                     return RedirectToAction("Index", "Home");
                 }
@@ -75,6 +72,8 @@ namespace VehicleRentalManagement.Controllers
                 ModelState.AddModelError("", "Kullanıcı adı veya şifre hatalı!");
             }
 
+            // Hata durumunda returnUrl'i ViewBag'e geri koy
+            ViewBag.ReturnUrl = model.ReturnUrl;
             return View(model);
         }
 

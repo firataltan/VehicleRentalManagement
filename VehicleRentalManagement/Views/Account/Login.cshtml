@@ -325,21 +325,21 @@
             {
                 <div class="alert alert-danger" role="alert">
                     <i class="fas fa-exclamation-circle me-2"></i>
-                    @Html.ValidationSummary(false)
+                    <div asp-validation-summary="All" class="text-danger"></div>
                 </div>
             }
             
-            @using (Html.BeginForm("Login", "Account", new { ReturnUrl = ViewBag.ReturnUrl }, FormMethod.Post, antiforgery: true, htmlAttributes: new { @class = "login-form" }))
-            {
+            <form asp-action="Login" asp-controller="Account" method="post" class="login-form">
                 @Html.AntiForgeryToken()
+                <input asp-for="ReturnUrl" type="hidden" value="@ViewBag.ReturnUrl" />
                 
                 <div class="form-group">
                     <label class="form-label">
                         <i class="fas fa-user"></i>
                         Kullanıcı Adı
                     </label>
-                    @Html.TextBoxFor(m => m.Username, new { @class = "form-control", placeholder = "Kullanıcı adınızı giriniz", autocomplete = "username" })
-                    @Html.ValidationMessageFor(m => m.Username, "", new { @class = "text-danger small" })
+                    <input asp-for="Username" class="form-control" placeholder="Kullanıcı adınızı giriniz" autocomplete="username" />
+                    <span asp-validation-for="Username" class="text-danger small"></span>
                 </div>
                 
                 <div class="form-group">
@@ -348,16 +348,16 @@
                         Şifre
                     </label>
                     <div class="input-group">
-                        @Html.PasswordFor(m => m.Password, new { @class = "form-control", placeholder = "Şifrenizi giriniz", id = "password", autocomplete = "current-password" })
+                        <input asp-for="Password" type="password" class="form-control" placeholder="Şifrenizi giriniz" id="password" autocomplete="current-password" />
                         <span class="input-group-text" onclick="togglePassword()">
                             <i class="fas fa-eye" id="toggleIcon"></i>
                         </span>
                     </div>
-                    @Html.ValidationMessageFor(m => m.Password, "", new { @class = "text-danger small" })
+                    <span asp-validation-for="Password" class="text-danger small"></span>
                 </div>
                 
                 <div class="form-check">
-                    @Html.CheckBoxFor(m => m.RememberMe, new { @class = "form-check-input", id = "rememberMe" })
+                    <input asp-for="RememberMe" type="checkbox" class="form-check-input" id="rememberMe" />
                     <label class="form-check-label" for="rememberMe">
                         Beni Hatırla
                     </label>
@@ -367,7 +367,7 @@
                     <i class="fas fa-sign-in-alt me-2"></i>
                     Giriş Yap
                 </button>
-            }
+            </form>
             
             <div class="login-footer">
                 <div class="test-credentials">

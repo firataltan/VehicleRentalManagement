@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
-using Microsoft.AspNetCore.Http;
+using System.Security.Claims;
 
 namespace VehicleRentalManagement.Controllers
 {
@@ -10,22 +10,26 @@ namespace VehicleRentalManagement.Controllers
     {
         protected int CurrentUserId
         {
-            get { return HttpContext.Session.GetInt32("UserId") ?? 0; }
+            get 
+            { 
+                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+                return userIdClaim != null && int.TryParse(userIdClaim.Value, out int userId) ? userId : 0;
+            }
         }
 
         protected string CurrentUsername
         {
-            get { return HttpContext.Session.GetString("Username") ?? ""; }
+            get { return User.FindFirst(ClaimTypes.Name)?.Value ?? ""; }
         }
 
         protected string CurrentUserFullName
         {
-            get { return HttpContext.Session.GetString("FullName") ?? ""; }
+            get { return User.FindFirst("FullName")?.Value ?? ""; }
         }
 
         protected string CurrentUserRole
         {
-            get { return HttpContext.Session.GetString("UserRole") ?? ""; }
+            get { return User.FindFirst(ClaimTypes.Role)?.Value ?? ""; }
         }
 
         protected bool IsAdmin
@@ -40,12 +44,9 @@ namespace VehicleRentalManagement.Controllers
 
         public override void OnActionExecuting(ActionExecutingContext context)
         {
-            if (CurrentUserId == 0)
-            {
-                context.Result = new RedirectResult("~/Account/Login");
-                return;
-            }
-
+            // ASP.NET Core'da [Authorize] attribute'u otomatik olarak authentication kontrolü yapar
+            // Bu yüzden manuel kontrol gerekmez
+            
             ViewBag.CurrentUserId = CurrentUserId;
             ViewBag.CurrentUsername = CurrentUsername;
             ViewBag.CurrentUserFullName = CurrentUserFullName;

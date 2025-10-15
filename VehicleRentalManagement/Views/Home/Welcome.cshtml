@@ -1,0 +1,33 @@
+@{
+    ViewBag.Title = "Hoş Geldiniz";
+}
+
+<div class="container-fluid">
+    <div class="row justify-content-center align-items-center min-vh-100">
+        <div class="col-md-8 col-lg-6">
+            <div class="text-center">
+                <div class="mb-4">
+                    <i class="fas fa-car-side text-primary" style="font-size: 4rem;"></i>
+                </div>
+                <h1 class="display-4 fw-bold text-primary mb-3">Araç Kiralama Yönetim Sistemi</h1>
+                <p class="lead text-muted mb-4">
+                    Araçlarınızın çalışma sürelerini takip edin, verimliliği artırın.
+                </p>
+                <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                    <a href="@Url.Action("Login", "Account")" class="btn btn-primary btn-lg px-4 me-md-2">
+                        <i class="fas fa-sign-in-alt me-2"></i>Giriş Yap
+                    </a>
+                    <a href="@Url.Action("About", "Home")" class="btn btn-outline-secondary btn-lg px-4">
+                        <i class="fas fa-info-circle me-2"></i>Hakkında
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .min-vh-100 {
+        min-height: 100vh;
+    }
+</style>

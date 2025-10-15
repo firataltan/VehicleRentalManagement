@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Linq;
@@ -18,8 +19,16 @@ namespace VehicleRentalManagement.Controllers
             _workingHourRepo = new WorkingHourRepository(db);
         }
 
+        [AllowAnonymous]
         public ActionResult Index()
         {
+            // Login olmamış kullanıcılar için basit bir hoş geldin sayfası
+            if (!User.Identity.IsAuthenticated)
+            {
+                return View("Welcome");
+            }
+
+            // Login olmuş kullanıcılar için dashboard
             var summaries = _workingHourRepo.GetWeeklySummary();
             var allRecords = _workingHourRepo.GetAll().Take(10).ToList();
 
@@ -36,6 +45,7 @@ namespace VehicleRentalManagement.Controllers
             return View(viewModel);
         }
 
+        [AllowAnonymous]
         public ActionResult About()
         {
             return View();
