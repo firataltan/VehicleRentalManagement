@@ -11,9 +11,9 @@ namespace VehicleRentalManagement.DataAccess.Repositories
     {
         private readonly DatabaseConnection _db;
 
-        public UserRepository()
+        public UserRepository(DatabaseConnection db)
         {
-            _db = new DatabaseConnection();
+            _db = db;
         }
 
         public User ValidateUser(string username, string password)

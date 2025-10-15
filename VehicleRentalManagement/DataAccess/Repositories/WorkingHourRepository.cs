@@ -10,9 +10,9 @@ namespace VehicleRentalManagement.DataAccess.Repositories
     {
         private readonly DatabaseConnection _db;
 
-        public WorkingHourRepository()
+        public WorkingHourRepository(DatabaseConnection db)
         {
-            _db = new DatabaseConnection();
+            _db = db;
         }
 
         public IEnumerable<WorkingHour> GetAll()

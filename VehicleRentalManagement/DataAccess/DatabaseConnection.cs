@@ -1,4 +1,4 @@
-﻿using System.Configuration;
+﻿using Microsoft.Extensions.Configuration;
 using System.Data.SqlClient;
 
 namespace VehicleRentalManagement.DataAccess
@@ -7,9 +7,10 @@ namespace VehicleRentalManagement.DataAccess
     {
         private readonly string _connectionString;
 
-        public DatabaseConnection()
+        // IConfiguration dependency injection
+        public DatabaseConnection(IConfiguration configuration)
         {
-            _connectionString = ConfigurationManager.ConnectionStrings["VehicleRentalDB"].ConnectionString;
+            _connectionString = configuration.GetConnectionString("VehicleRentalDB");
         }
 
         public SqlConnection GetConnection()

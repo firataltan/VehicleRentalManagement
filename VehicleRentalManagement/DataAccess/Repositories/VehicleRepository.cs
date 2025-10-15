@@ -10,9 +10,9 @@ namespace VehicleRentalManagement.DataAccess.Repositories
     {
         private readonly DatabaseConnection _db;
 
-        public VehicleRepository()
+        public VehicleRepository(DatabaseConnection db)
         {
-            _db = new DatabaseConnection();
+            _db = db;
         }
 
         public IEnumerable<Vehicle> GetAll()

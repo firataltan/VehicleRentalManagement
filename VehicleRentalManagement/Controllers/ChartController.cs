@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Linq;
-using System.Web.Mvc;
+using VehicleRentalManagement.DataAccess;
 using VehicleRentalManagement.DataAccess.Repositories;
 
 namespace VehicleRentalManagement.Controllers
@@ -10,24 +10,21 @@ namespace VehicleRentalManagement.Controllers
     {
         private readonly WorkingHourRepository _workingHourRepo;
 
-        public ChartController()
+        public ChartController(DatabaseConnection db)
         {
-            _workingHourRepo = new WorkingHourRepository();
+            _workingHourRepo = new WorkingHourRepository(db);
         }
 
-        // GET: Chart/ActiveHours
-        public ActionResult ActiveHours()
-        {
-            return View();
-        }
-
-        // GET: Chart/IdleHours
-        public ActionResult IdleHours()
+        public IActionResult ActiveHours()
         {
             return View();
         }
 
-        // GET: Chart/GetActiveHoursData
+        public IActionResult IdleHours()
+        {
+            return View();
+        }
+
         [HttpGet]
         public JsonResult GetActiveHoursData()
         {
@@ -44,15 +41,14 @@ namespace VehicleRentalManagement.Controllers
                     totalHours = 168
                 }).ToList();
 
-                return Json(new { success = true, data = data }, JsonRequestBehavior.AllowGet);
+                return Json(new { success = true, data = data });
             }
             catch (Exception ex)
             {
-                return Json(new { success = false, message = ex.Message }, JsonRequestBehavior.AllowGet);
+                return Json(new { success = false, message = ex.Message });
             }
         }
 
-        // GET: Chart/GetIdleHoursData
         [HttpGet]
         public JsonResult GetIdleHoursData()
         {
@@ -69,15 +65,14 @@ namespace VehicleRentalManagement.Controllers
                     totalHours = 168
                 }).ToList();
 
-                return Json(new { success = true, data = data }, JsonRequestBehavior.AllowGet);
+                return Json(new { success = true, data = data });
             }
             catch (Exception ex)
             {
-                return Json(new { success = false, message = ex.Message }, JsonRequestBehavior.AllowGet);
+                return Json(new { success = false, message = ex.Message });
             }
         }
 
-        // GET: Chart/GetComparisonData
         [HttpGet]
         public JsonResult GetComparisonData()
         {
@@ -94,11 +89,11 @@ namespace VehicleRentalManagement.Controllers
                     idlePercentage = Math.Round(s.IdlePercentage, 2)
                 }).ToList();
 
-                return Json(new { success = true, data = data }, JsonRequestBehavior.AllowGet);
+                return Json(new { success = true, data = data });
             }
             catch (Exception ex)
             {
-                return Json(new { success = false, message = ex.Message }, JsonRequestBehavior.AllowGet);
+                return Json(new { success = false, message = ex.Message });
             }
         }
     }

@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc;
-using System.Web.Mvc;
+using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.AspNetCore.Http;
 
 namespace VehicleRentalManagement.Controllers
 {
@@ -10,22 +10,22 @@ namespace VehicleRentalManagement.Controllers
     {
         protected int CurrentUserId
         {
-            get { return Session["UserId"] != null ? (int)Session["UserId"] : 0; }
+            get { return HttpContext.Session.GetInt32("UserId") ?? 0; }
         }
 
         protected string CurrentUsername
         {
-            get { return Session["Username"]?.ToString() ?? ""; }
+            get { return HttpContext.Session.GetString("Username") ?? ""; }
         }
 
         protected string CurrentUserFullName
         {
-            get { return Session["FullName"]?.ToString() ?? ""; }
+            get { return HttpContext.Session.GetString("FullName") ?? ""; }
         }
 
         protected string CurrentUserRole
         {
-            get { return Session["UserRole"]?.ToString() ?? ""; }
+            get { return HttpContext.Session.GetString("UserRole") ?? ""; }
         }
 
         protected bool IsAdmin
@@ -38,11 +38,11 @@ namespace VehicleRentalManagement.Controllers
             get { return CurrentUserRole == "User"; }
         }
 
-        protected override void OnActionExecuting(ActionExecutingContext filterContext)
+        public override void OnActionExecuting(ActionExecutingContext context)
         {
             if (CurrentUserId == 0)
             {
-                filterContext.Result = new RedirectResult("~/Account/Login");
+                context.Result = new RedirectResult("~/Account/Login");
                 return;
             }
 
@@ -52,7 +52,7 @@ namespace VehicleRentalManagement.Controllers
             ViewBag.CurrentUserRole = CurrentUserRole;
             ViewBag.IsAdmin = IsAdmin;
 
-            base.OnActionExecuting(filterContext);
+            base.OnActionExecuting(context);
         }
     }
 }

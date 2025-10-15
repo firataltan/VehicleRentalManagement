@@ -2,9 +2,9 @@
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Linq;
-using System.Web.Mvc;
 using VehicleRentalManagement.DataAccess.Repositories;
 using VehicleRentalManagement.Models;
+using VehicleRentalManagement.DataAccess;
 
 namespace VehicleRentalManagement.Controllers
 {
@@ -13,10 +13,10 @@ namespace VehicleRentalManagement.Controllers
         private readonly WorkingHourRepository _workingHourRepo;
         private readonly VehicleRepository _vehicleRepo;
 
-        public WorkingHourController()
+        public WorkingHourController(DatabaseConnection db)
         {
-            _workingHourRepo = new WorkingHourRepository();
-            _vehicleRepo = new VehicleRepository();
+            _workingHourRepo = new WorkingHourRepository(db);
+            _vehicleRepo = new VehicleRepository(db);
         }
 
         // GET: WorkingHour
@@ -107,7 +107,7 @@ namespace VehicleRentalManagement.Controllers
 
             if (workingHour == null)
             {
-                return HttpNotFound();
+                return NotFound();
             }
 
             ViewBag.Vehicles = new SelectList(_vehicleRepo.GetAll(), "VehicleId", "VehicleName", workingHour.VehicleId);
@@ -186,7 +186,7 @@ namespace VehicleRentalManagement.Controllers
 
             if (workingHour == null)
             {
-                return HttpNotFound();
+                return NotFound();
             }
 
             return View(workingHour);

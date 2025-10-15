@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System;
-using System.Web.Mvc;
+using VehicleRentalManagement.DataAccess;
 using VehicleRentalManagement.DataAccess.Repositories;
 using VehicleRentalManagement.Models;
 
@@ -10,9 +10,9 @@ namespace VehicleRentalManagement.Controllers
     {
         private readonly VehicleRepository _vehicleRepo;
 
-        public VehicleController()
+        public VehicleController(DatabaseConnection db)
         {
-            _vehicleRepo = new VehicleRepository();
+            _vehicleRepo = new VehicleRepository(db);
         }
 
         // GET: Vehicle
@@ -88,7 +88,7 @@ namespace VehicleRentalManagement.Controllers
 
             if (vehicle == null)
             {
-                return HttpNotFound();
+                return NotFound();
             }
 
             return View(vehicle);
@@ -159,7 +159,7 @@ namespace VehicleRentalManagement.Controllers
 
             if (vehicle == null)
             {
-                return HttpNotFound();
+                return NotFound();
             }
 
             return View(vehicle);

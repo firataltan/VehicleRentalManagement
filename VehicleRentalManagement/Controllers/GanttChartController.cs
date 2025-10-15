@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Web.Mvc;
+using VehicleRentalManagement.DataAccess;
 using VehicleRentalManagement.DataAccess.Repositories;
 using VehicleRentalManagement.Models.ViewModels;
 
@@ -13,10 +13,10 @@ namespace VehicleRentalManagement.Controllers
         private readonly VehicleRepository _vehicleRepo;
         private readonly WorkingHourRepository _workingHourRepo;
 
-        public GanttChartController()
+        public GanttChartController(DatabaseConnection db)
         {
-            _vehicleRepo = new VehicleRepository();
-            _workingHourRepo = new WorkingHourRepository();
+            _vehicleRepo = new VehicleRepository(db);
+            _workingHourRepo = new WorkingHourRepository(db);
         }
 
         // GET: GanttChart

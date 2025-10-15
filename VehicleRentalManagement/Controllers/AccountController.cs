@@ -2,10 +2,15 @@
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Web;
-using System.Web.Mvc;
-using System.Web.Security;
+//using System.Web.Mvc;
+//using System.Web.Security;
 using VehicleRentalManagement.DataAccess.Repositories;
 using VehicleRentalManagement.Models.ViewModels;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using System.Security.Claims;
+using VehicleRentalManagement.DataAccess;
+
 
 namespace VehicleRentalManagement.Controllers
 {
@@ -13,9 +18,9 @@ namespace VehicleRentalManagement.Controllers
     {
         private readonly UserRepository _userRepo;
 
-        public AccountController()
+        public AccountController(DatabaseConnection db)
         {
-            _userRepo = new UserRepository();
+            _userRepo = new UserRepository(db);
         }
 
         [HttpGet]
@@ -29,7 +34,7 @@ namespace VehicleRentalManagement.Controllers
         [HttpPost]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
-        public ActionResult Login(LoginViewModel model, string returnUrl)
+        public async Task<IActionResult> Login(LoginViewModel model, string returnUrl)
         {
             if (ModelState.IsValid)
             {
@@ -37,17 +42,32 @@ namespace VehicleRentalManagement.Controllers
 
                 if (user != null)
                 {
-                    FormsAuthentication.SetAuthCookie(user.Username, model.RememberMe);
+                    // Kullanıcı claim'leri oluştur
+                    var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()),
+                new Claim(ClaimTypes.Name, user.Username),
+                new Claim("FullName", user.FullName),
+                new Claim(ClaimTypes.Role, user.Role)
+            };
 
-                    Session["UserId"] = user.UserId;
-                    Session["Username"] = user.Username;
-                    Session["FullName"] = user.FullName;
-                    Session["UserRole"] = user.Role;
+                    var claimsIdentity = new ClaimsIdentity(
+                        claims, CookieAuthenticationDefaults.AuthenticationScheme);
 
-                    if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
+                    var authProperties = new AuthenticationProperties
                     {
+                        IsPersistent = model.RememberMe
+                    };
+
+                    // Cookie oluştur ve oturum başlat
+                    await HttpContext.SignInAsync(
+                        CookieAuthenticationDefaults.AuthenticationScheme,
+                        new ClaimsPrincipal(claimsIdentity),
+                        authProperties);
+
+                    // Yönlendirme
+                    if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
                         return Redirect(returnUrl);
-                    }
 
                     return RedirectToAction("Index", "Home");
                 }
@@ -60,16 +80,19 @@ namespace VehicleRentalManagement.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Logout()
+        public async Task<IActionResult> Logout()
         {
-            FormsAuthentication.SignOut();
-            Session.Clear();
-            Session.Abandon();
+            // Çerez tabanlı kimlik doğrulamasını sonlandır
+            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+
+            // Gerekirse ekstra oturum temizliği yapılabilir
+            HttpContext.Session.Clear();
 
             return RedirectToAction("Login", "Account");
         }
 
-        public ActionResult AccessDenied()
+        [Authorize]
+        public IActionResult AccessDenied()
         {
             return View();
         }
