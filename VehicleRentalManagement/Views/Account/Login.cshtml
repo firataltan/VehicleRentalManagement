@@ -321,17 +321,16 @@
                 <p class="login-subtitle">Araç Kiralama Yönetim Sistemi</p>
             </div>
             
-            @if (!ViewData.ModelState.IsValid)
+            @if (TempData["ErrorMessage"] != null)
             {
                 <div class="alert alert-danger" role="alert">
                     <i class="fas fa-exclamation-circle me-2"></i>
-                    <div asp-validation-summary="All" class="text-danger"></div>
+                    @TempData["ErrorMessage"]
                 </div>
             }
             
             <form asp-action="Login" asp-controller="Account" method="post" class="login-form">
                 @Html.AntiForgeryToken()
-                <input asp-for="ReturnUrl" type="hidden" value="@ViewBag.ReturnUrl" />
                 
                 <div class="form-group">
                     <label class="form-label">

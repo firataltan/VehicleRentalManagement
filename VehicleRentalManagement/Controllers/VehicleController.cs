@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using System;
 using VehicleRentalManagement.DataAccess;
 using VehicleRentalManagement.DataAccess.Repositories;
@@ -6,6 +7,7 @@ using VehicleRentalManagement.Models;
 
 namespace VehicleRentalManagement.Controllers
 {
+    [Authorize]
     public class VehicleController : BaseController
     {
         private readonly VehicleRepository _vehicleRepo;

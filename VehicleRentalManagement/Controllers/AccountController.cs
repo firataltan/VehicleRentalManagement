@@ -62,18 +62,19 @@ namespace VehicleRentalManagement.Controllers
                         new ClaimsPrincipal(claimsIdentity),
                         authProperties);
 
-                    // Yönlendirme - model'den returnUrl'i al
-                    if (!string.IsNullOrEmpty(model.ReturnUrl) && Url.IsLocalUrl(model.ReturnUrl))
-                        return Redirect(model.ReturnUrl);
+                    // Yönlendirme - query string'den returnUrl'i al
+                    var returnUrl = Request.Query["returnUrl"].FirstOrDefault();
+                    if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
+                        return Redirect(returnUrl);
 
                     return RedirectToAction("Index", "Home");
                 }
 
-                ModelState.AddModelError("", "Kullanıcı adı veya şifre hatalı!");
+                TempData["ErrorMessage"] = "Kullanıcı adı veya şifre hatalı!";
             }
 
             // Hata durumunda returnUrl'i ViewBag'e geri koy
-            ViewBag.ReturnUrl = model.ReturnUrl;
+            ViewBag.ReturnUrl = Request.Query["returnUrl"].FirstOrDefault();
             return View(model);
         }
 
@@ -87,7 +88,8 @@ namespace VehicleRentalManagement.Controllers
             // Gerekirse ekstra oturum temizliği yapılabilir
             HttpContext.Session.Clear();
 
-            return RedirectToAction("Login", "Account");
+            // Ana sayfaya yönlendir (returnUrl olmadan)
+            return RedirectToAction("Index", "Home");
         }
 
         [Authorize]

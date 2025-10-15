@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc.Rendering;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Linq;
@@ -8,6 +9,7 @@ using VehicleRentalManagement.DataAccess;
 
 namespace VehicleRentalManagement.Controllers
 {
+    [Authorize]
     public class WorkingHourController : BaseController
     {
         private readonly WorkingHourRepository _workingHourRepo;

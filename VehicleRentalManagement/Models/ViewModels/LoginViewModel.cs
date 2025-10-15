@@ -15,8 +15,5 @@ namespace VehicleRentalManagement.Models.ViewModels
 
         [Display(Name = "Beni Hatırla")]
         public bool RememberMe { get; set; }
-
-        // returnUrl için property - validation attribute yok, opsiyonel
-        public string ReturnUrl { get; set; }
     }
 }

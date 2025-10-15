@@ -19,7 +19,6 @@ namespace VehicleRentalManagement.Controllers
             _workingHourRepo = new WorkingHourRepository(db);
         }
 
-        [AllowAnonymous]
         public ActionResult Index()
         {
             // Login olmamış kullanıcılar için basit bir hoş geldin sayfası

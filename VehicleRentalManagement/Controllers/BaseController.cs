@@ -5,7 +5,6 @@ using System.Security.Claims;
 
 namespace VehicleRentalManagement.Controllers
 {
-    [Authorize]
     public class BaseController : Controller
     {
         protected int CurrentUserId
