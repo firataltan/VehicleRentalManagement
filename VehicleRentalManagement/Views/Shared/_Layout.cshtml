@@ -374,8 +374,8 @@
                             <i class="fas fa-home me-1"></i> Ana Sayfa
                         </a>
                     </li>
-                    
-                    @if (ViewBag.IsAdmin)
+
+                    @if (ViewBag.IsAdmin == true)
                     {
                         <li class="nav-item">
                             <a class="nav-link" href="@Url.Action("Index", "Vehicle")">
@@ -383,14 +383,14 @@
                             </a>
                         </li>
                     }
-                    
+
                     <li class="nav-item">
                         <a class="nav-link" href="@Url.Action("Index", "WorkingHour")">
                             <i class="fas fa-clock me-1"></i> Çalışma Süreleri
                         </a>
                     </li>
-                    
-                    @if (ViewBag.IsAdmin)
+
+                    @if (ViewBag.IsAdmin == true)
                     {
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
@@ -400,25 +400,29 @@
                                 <li><a class="dropdown-item" href="@Url.Action("ActiveHours", "Chart")">Aktif Çalışma</a></li>
                                 <li><a class="dropdown-item" href="@Url.Action("IdleHours", "Chart")">Boşta Bekleme</a></li>
                                 <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item" href="@Url.Action("Index", "GanttChart")">
-                                    <i class="fas fa-star text-warning me-1"></i> Gantt Chart
-                                </a></li>
+                                <li>
+                                    <a class="dropdown-item" href="@Url.Action("Index", "GanttChart")">
+                                        <i class="fas fa-star text-warning me-1"></i> Gantt Chart
+                                    </a>
+                                </li>
                             </ul>
                         </li>
                     }
-                    
+
                     <li class="nav-item dropdown ms-3">
                         <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown">
-                            <div class="rounded-circle bg-gradient d-flex align-items-center justify-content-center me-2" 
+                            <div class="rounded-circle bg-gradient d-flex align-items-center justify-content-center me-2"
                                  style="width: 35px; height: 35px; background: var(--primary-gradient);">
                                 <i class="fas fa-user text-white"></i>
                             </div>
-                            <span>@ViewBag.CurrentUserFullName</span>
+                            <span>@(ViewBag.CurrentUserFullName ?? "Kullanıcı")</span>
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end">
-                            <li><a class="dropdown-item" href="#">
-                                <i class="fas fa-user-circle me-2"></i> Profil
-                            </a></li>
+                            <li>
+                                <a class="dropdown-item" href="#">
+                                    <i class="fas fa-user-circle me-2"></i> Profil
+                                </a>
+                            </li>
                             <li><hr class="dropdown-divider"></li>
                             <li>
                                 <form method="post" action="@Url.Action("Logout", "Account")">
@@ -430,6 +434,7 @@
                             </li>
                         </ul>
                     </li>
+
                 </ul>
             </div>
         </div>
