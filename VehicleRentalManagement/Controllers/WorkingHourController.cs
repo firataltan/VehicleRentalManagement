@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Linq;
@@ -113,7 +112,7 @@ namespace VehicleRentalManagement.Controllers
                 }
             }
 
-            ViewBag.Vehicles = new SelectList(_vehicleRepo.GetAll(), "VehicleId", "VehicleName", workingHour.VehicleId);
+            ViewBag.Vehicles = _vehicleRepo.GetAll().ToList();
             return View(workingHour);
         }
 
@@ -133,7 +132,7 @@ namespace VehicleRentalManagement.Controllers
                 return NotFound();
             }
 
-            ViewBag.Vehicles = new SelectList(_vehicleRepo.GetAll(), "VehicleId", "VehicleName", workingHour.VehicleId);
+            ViewBag.Vehicles = _vehicleRepo.GetAll().ToList();
             return View(workingHour);
         }
 
@@ -173,7 +172,7 @@ namespace VehicleRentalManagement.Controllers
                 }
             }
 
-            ViewBag.Vehicles = new SelectList(_vehicleRepo.GetAll(), "VehicleId", "VehicleName", workingHour.VehicleId);
+            ViewBag.Vehicles = _vehicleRepo.GetAll().ToList();
             return View(workingHour);
         }
 

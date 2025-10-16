@@ -35,7 +35,7 @@ namespace VehicleRentalManagement.Models
         [StringLength(500, ErrorMessage = "Notlar en fazla 500 karakter olabilir")]
         [Display(Name = "Notlar")]
         [DataType(DataType.MultilineText)]
-        public string Notes { get; set; }
+        public string? Notes { get; set; }
 
         public int CreatedBy { get; set; }
 

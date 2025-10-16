@@ -30,7 +30,7 @@ namespace VehicleRentalManagement.Models.ViewModels
         [StringLength(500)]
         [Display(Name = "Notlar")]
         [DataType(DataType.MultilineText)]
-        public string Notes { get; set; }
+        public string? Notes { get; set; }
 
         // Dropdown için
         public IEnumerable<SelectListItem> VehicleList { get; set; }
