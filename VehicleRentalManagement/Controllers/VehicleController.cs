@@ -44,20 +44,26 @@ namespace VehicleRentalManagement.Controllers
         // POST: Vehicle/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create(Vehicle vehicle)
+        public ActionResult Create([Bind("VehicleName,LicensePlate")] Vehicle vehicle)
         {
             if (!IsAdmin)
             {
                 return RedirectToAction("AccessDenied", "Account");
             }
 
+            // Server-managed fields: set before validation and remove from ModelState
+            vehicle.CreatedBy = CurrentUserId;
+            vehicle.IsActive = true;
+            ModelState.Remove(nameof(Vehicle.CreatedBy));
+            ModelState.Remove(nameof(Vehicle.IsActive));
+            ModelState.Remove(nameof(Vehicle.CreatedDate));
+            ModelState.Remove(nameof(Vehicle.ModifiedBy));
+            ModelState.Remove(nameof(Vehicle.ModifiedDate));
+
             if (ModelState.IsValid)
             {
                 try
                 {
-                    vehicle.CreatedBy = CurrentUserId;
-                    vehicle.IsActive = true;
-
                     var id = _vehicleRepo.Add(vehicle);
 
                     if (id > 0)

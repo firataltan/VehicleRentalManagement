@@ -32,10 +32,8 @@ namespace VehicleRentalManagement.Models
         public DateTime? ModifiedDate { get; set; }
 
         // Navigation properties - Database'den JOIN ile gelecek
-        [Display(Name = "Oluşturan")]
-        public string CreatedByName { get; set; }
+        public string? CreatedByName { get; set; }
 
-        [Display(Name = "Güncelleyen")]
-        public string ModifiedByName { get; set; }
+        public string? ModifiedByName { get; set; }
     }
 }

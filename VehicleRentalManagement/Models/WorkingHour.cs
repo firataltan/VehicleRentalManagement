@@ -48,16 +48,12 @@ namespace VehicleRentalManagement.Models
         public DateTime? ModifiedDate { get; set; }
 
         // Navigation properties - Database'den JOIN ile gelecek
-        [Display(Name = "Araç Adı")]
-        public string VehicleName { get; set; }
+        public string? VehicleName { get; set; }
 
-        [Display(Name = "Plaka")]
-        public string LicensePlate { get; set; }
+        public string? LicensePlate { get; set; }
 
-        [Display(Name = "Kaydeden")]
-        public string CreatedByName { get; set; }
+        public string? CreatedByName { get; set; }
 
-        [Display(Name = "Güncelleyen")]
-        public string ModifiedByName { get; set; }
+        public string? ModifiedByName { get; set; }
     }
 }

@@ -17,11 +17,19 @@ namespace VehicleRentalManagement.Controllers
 
         public IActionResult ActiveHours()
         {
+            if (!IsAdmin)
+            {
+                return RedirectToAction("AccessDenied", "Account");
+            }
             return View();
         }
 
         public IActionResult IdleHours()
         {
+            if (!IsAdmin)
+            {
+                return RedirectToAction("AccessDenied", "Account");
+            }
             return View();
         }
 

@@ -24,6 +24,11 @@ namespace VehicleRentalManagement.Controllers
         // GET: WorkingHour
         public ActionResult Index()
         {
+            if (!IsUser && !IsAdmin)
+            {
+                return RedirectToAction("AccessDenied", "Account");
+            }
+
             var workingHours = _workingHourRepo.GetAll();
             return View(workingHours);
         }

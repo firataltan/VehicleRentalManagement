@@ -164,13 +164,13 @@ namespace VehicleRentalManagement.DataAccess.Repositories
                                 VehicleId = reader.GetInt32(0),
                                 VehicleName = reader.GetString(1),
                                 LicensePlate = reader.GetString(2),
-                                TotalActiveHours = reader.GetDecimal(3),
-                                TotalMaintenanceHours = reader.GetDecimal(4),
-                                TotalIdleHours = reader.GetDecimal(5),
-                                ActivePercentage = reader.GetDecimal(6),
-                                MaintenancePercentage = reader.GetDecimal(7),
-                                IdlePercentage = reader.GetDecimal(8),
-                                RecordCount = reader.GetInt32(9)
+                                TotalActiveHours = reader.IsDBNull(3) ? 0 : reader.GetDecimal(3),
+                                TotalMaintenanceHours = reader.IsDBNull(4) ? 0 : reader.GetDecimal(4),
+                                TotalIdleHours = reader.IsDBNull(5) ? 0 : reader.GetDecimal(5),
+                                ActivePercentage = reader.IsDBNull(6) ? 0 : reader.GetDecimal(6),
+                                MaintenancePercentage = reader.IsDBNull(7) ? 0 : reader.GetDecimal(7),
+                                IdlePercentage = reader.IsDBNull(8) ? 0 : reader.GetDecimal(8),
+                                RecordCount = reader.IsDBNull(9) ? 0 : reader.GetInt32(9)
                             });
                         }
                     }

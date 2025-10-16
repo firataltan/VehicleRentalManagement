@@ -23,6 +23,11 @@ namespace VehicleRentalManagement.Controllers
         [HttpGet]
         public ActionResult Index()
         {
+            if (!IsAdmin)
+            {
+                return RedirectToAction("AccessDenied", "Account");
+            }
+
             var vehicles = _vehicleRepo.GetAll();
 
             var viewModel = new GanttChartViewModel

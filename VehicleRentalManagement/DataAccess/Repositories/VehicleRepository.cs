@@ -90,14 +90,15 @@ namespace VehicleRentalManagement.DataAccess.Repositories
         {
             using (var conn = _db.GetConnection())
             {
-                var query = @"INSERT INTO Vehicles (VehicleName, LicensePlate, CreatedBy, CreatedDate)
-                             VALUES (@VehicleName, @LicensePlate, @CreatedBy, @CreatedDate);
+                var query = @"INSERT INTO Vehicles (VehicleName, LicensePlate, IsActive, CreatedBy, CreatedDate)
+                             VALUES (@VehicleName, @LicensePlate, @IsActive, @CreatedBy, @CreatedDate);
                              SELECT CAST(SCOPE_IDENTITY() as int)";
 
                 using (var cmd = new SqlCommand(query, conn))
                 {
                     cmd.Parameters.AddWithValue("@VehicleName", entity.VehicleName);
                     cmd.Parameters.AddWithValue("@LicensePlate", entity.LicensePlate);
+                        cmd.Parameters.AddWithValue("@IsActive", entity.IsActive);
                     cmd.Parameters.AddWithValue("@CreatedBy", entity.CreatedBy);
                     cmd.Parameters.AddWithValue("@CreatedDate", DateTime.Now);
 
