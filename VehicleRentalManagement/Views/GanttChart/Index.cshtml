@@ -1,0 +1,816 @@
+﻿@model VehicleRentalManagement.Models.ViewModels.GanttChartViewModel
+@{
+    ViewBag.Title = "Gantt Chart - Aktif Çalışma Takibi";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+    .gantt-container {
+        background: white;
+        border-radius: 20px;
+        padding: 2.5rem;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    }
+    
+    .gantt-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 16px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .gantt-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -10%;
+        width: 300px;
+        height: 300px;
+        background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+        animation: pulse 4s ease-in-out infinite;
+    }
+    
+    @@keyframes pulse {
+        0%, 100% { transform: scale(1) rotate(0deg); }
+        50% { transform: scale(1.1) rotate(10deg); }
+    }
+    
+    .gantt-header h2 {
+        margin-bottom: 0.5rem;
+        font-weight: 800;
+        position: relative;
+        z-index: 1;
+    }
+    
+    .gantt-header p {
+        position: relative;
+        z-index: 1;
+    }
+    
+    .joker-badge {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        background: rgba(255, 215, 0, 0.9);
+        color: #2d3748;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-weight: 700;
+        font-size: 0.85rem;
+        z-index: 2;
+        box-shadow: 0 4px 12px rgba(255, 215, 0, 0.4);
+        animation: bounce 2s ease-in-out infinite;
+    }
+    
+    @@keyframes bounce {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-10px); }
+    }
+    
+    .filter-panel {
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+        border-radius: 16px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        border: 2px solid rgba(102, 126, 234, 0.1);
+    }
+    
+    .filter-title {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: #2d3748;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+    
+    .filter-title i {
+        width: 35px;
+        height: 35px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+    }
+    
+    .vehicle-selection {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .vehicle-checkbox {
+        background: white;
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 1rem;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .vehicle-checkbox::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    
+    .vehicle-checkbox:hover {
+        border-color: #667eea;
+        transform: translateY(-3px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+    }
+    
+    .vehicle-checkbox:hover::before {
+        opacity: 1;
+    }
+    
+    .vehicle-checkbox input[type="checkbox"] {
+        width: 1.3rem;
+        height: 1.3rem;
+        cursor: pointer;
+        margin-right: 0.75rem;
+        accent-color: #667eea;
+    }
+    
+    .vehicle-checkbox label {
+        cursor: pointer;
+        margin: 0;
+        font-weight: 600;
+        color: #2d3748;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        position: relative;
+        z-index: 1;
+    }
+    
+    .vehicle-checkbox .vehicle-icon {
+        width: 35px;
+        height: 35px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 0.9rem;
+    }
+    
+    .vehicle-checkbox .vehicle-info {
+        flex: 1;
+    }
+    
+    .vehicle-checkbox .vehicle-name {
+        font-weight: 700;
+        color: #2d3748;
+    }
+    
+    .vehicle-checkbox .vehicle-plate {
+        font-size: 0.85rem;
+        color: #718096;
+        margin-top: 0.25rem;
+    }
+    
+    .gantt-chart-wrapper {
+        background: white;
+        border-radius: 16px;
+        padding: 2rem;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+        margin-top: 2rem;
+        min-height: 400px;
+        overflow-x: auto;
+    }
+    
+    .gantt-title {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: #2d3748;
+        margin-bottom: 2rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+    
+    .gantt-title i {
+        color: #667eea;
+    }
+    
+    .gantt-row {
+        display: flex;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        min-height: 50px;
+        position: relative;
+    }
+    
+    .gantt-label {
+        min-width: 250px;
+        max-width: 250px;
+        font-weight: 600;
+        color: #2d3748;
+        padding-right: 2rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+    
+    .gantt-label .vehicle-avatar {
+        width: 40px;
+        height: 40px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 700;
+        flex-shrink: 0;
+    }
+    
+    .gantt-label .vehicle-details {
+        flex: 1;
+        min-width: 0;
+    }
+    
+    .gantt-label .vehicle-name-text {
+        font-size: 0.95rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    
+    .gantt-label .vehicle-plate-text {
+        font-size: 0.8rem;
+        color: #718096;
+    }
+    
+    .gantt-timeline {
+        flex: 1;
+        position: relative;
+        height: 45px;
+        background: linear-gradient(90deg, #f7fafc 0%, #edf2f7 100%);
+        border-radius: 10px;
+        overflow: visible;
+    }
+    
+    .gantt-bar {
+        position: absolute;
+        height: 100%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 0.85rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+        overflow: hidden;
+        z-index: 5;
+    }
+    
+    .gantt-bar::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+        transition: left 0.5s;
+    }
+    
+    .gantt-bar:hover {
+        transform: scaleY(1.15);
+        box-shadow: 0 4px 16px rgba(102, 126, 234, 0.5);
+        z-index: 10;
+    }
+    
+    .gantt-bar:hover::before {
+        left: 100%;
+    }
+    
+    .gantt-bar .bar-content {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0 1rem;
+    }
+    
+    .gantt-tooltip {
+        position: fixed;
+        background: rgba(0, 0, 0, 0.95);
+        color: white;
+        padding: 1.25rem;
+        border-radius: 12px;
+        font-size: 0.9rem;
+        z-index: 1000;
+        display: none;
+        pointer-events: none;
+        max-width: 350px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        backdrop-filter: blur(10px);
+    }
+    
+    .gantt-tooltip::before {
+        content: '';
+        position: absolute;
+        top: -8px;
+        left: 20px;
+        width: 0;
+        height: 0;
+        border-left: 8px solid transparent;
+        border-right: 8px solid transparent;
+        border-bottom: 8px solid rgba(0, 0, 0, 0.95);
+    }
+    
+    .tooltip-header {
+        font-weight: 700;
+        font-size: 1rem;
+        margin-bottom: 0.75rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    .tooltip-row {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .tooltip-row:last-child {
+        margin-bottom: 0;
+    }
+    
+    .tooltip-row i {
+        width: 20px;
+        color: #667eea;
+    }
+    
+    .tooltip-row strong {
+        color: #a0aec0;
+        min-width: 80px;
+    }
+    
+    .timeline-axis {
+        display: flex;
+        margin-top: 1.5rem;
+        padding-left: 250px;
+        border-top: 2px solid #e2e8f0;
+        padding-top: 1rem;
+    }
+    
+    .timeline-marker {
+        flex: 1;
+        text-align: center;
+        font-size: 0.8rem;
+        color: #718096;
+        font-weight: 600;
+        padding: 0.5rem 0;
+        position: relative;
+    }
+    
+    .timeline-marker::before {
+        content: '';
+        position: absolute;
+        top: -1rem;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 2px;
+        height: 0.5rem;
+        background: #cbd5e0;
+    }
+    
+    .timeline-marker.today {
+        color: #667eea;
+        font-weight: 700;
+    }
+    
+    .timeline-marker.today::before {
+        background: #667eea;
+        height: 0.75rem;
+    }
+    
+    .no-data-message {
+        text-align: center;
+        padding: 4rem 2rem;
+    }
+    
+    .no-data-message i {
+        font-size: 5rem;
+        color: #e2e8f0;
+        margin-bottom: 1.5rem;
+        animation: float 3s ease-in-out infinite;
+    }
+    
+    @@keyframes float {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-20px); }
+    }
+    
+    .no-data-message h5 {
+        color: #4a5568;
+        margin-bottom: 0.5rem;
+    }
+    
+    .no-data-message p {
+        color: #718096;
+    }
+    
+    .legend {
+        display: flex;
+        gap: 2rem;
+        justify-content: center;
+        padding: 1rem;
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+        border-radius: 12px;
+        margin-bottom: 1.5rem;
+    }
+    
+    .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: #4a5568;
+    }
+    
+    .legend-color {
+        width: 25px;
+        height: 15px;
+        border-radius: 4px;
+    }
+</style>
+
+<div class="gantt-container">
+    <div class="gantt-header">
+        <span class="joker-badge">
+            <i class="fas fa-star me-1"></i>JOKER GÖREV
+        </span>
+        <h2><i class="fas fa-chart-gantt me-2"></i>Gantt Chart - Aktif Çalışma Takibi</h2>
+        <p class="mb-0 opacity-75">Seçili araçların belirlenen tarih aralığındaki aktif çalışma sürelerini görüntüleyin</p>
+    </div>
+    
+    <div class="filter-panel">
+        <div class="filter-title">
+            <i class="fas fa-sliders-h"></i>
+            <span>Filtreleme Seçenekleri</span>
+        </div>
+        
+        @using (Html.BeginForm("Index", "GanttChart", FormMethod.Post, new { id = "ganttForm" }))
+        {
+            @Html.AntiForgeryToken()
+            
+            <div class="row mb-4">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">
+                        <i class="fas fa-calendar-alt me-2"></i>Başlangıç Tarihi
+                    </label>
+                    <input type="date" name="startDate" id="startDate" class="form-control" 
+                           value="@DateTime.Today.AddDays(-7).ToString("yyyy-MM-dd")" 
+                           max="@DateTime.Today.ToString("yyyy-MM-dd")"
+                           required />
+                </div>
+                
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">
+                        <i class="fas fa-calendar-check me-2"></i>Bitiş Tarihi
+                    </label>
+                    <input type="date" name="endDate" id="endDate" class="form-control" 
+                           value="@DateTime.Today.ToString("yyyy-MM-dd")" 
+                           max="@DateTime.Today.ToString("yyyy-MM-dd")"
+                           required />
+                </div>
+            </div>
+            
+            <div class="mb-3">
+                <label class="form-label">
+                    <i class="fas fa-car me-2"></i>Araç Seçimi 
+                    <span class="badge bg-primary ms-2">Birden fazla seçebilirsiniz</span>
+                </label>
+                
+                <div class="vehicle-selection">
+                    @if (Model != null && Model.Vehicles != null && Model.Vehicles.Any())
+                    {
+                        foreach (var vehicle in Model.Vehicles)
+                        {
+                            <div class="vehicle-checkbox">
+                                <label for="vehicle_@vehicle.VehicleId">
+                                    <input type="checkbox" 
+                                           name="vehicleIds" 
+                                           value="@vehicle.VehicleId" 
+                                           id="vehicle_@vehicle.VehicleId" 
+                                           class="vehicle-select" />
+                                    <div class="vehicle-icon">
+                                        <i class="fas fa-car"></i>
+                                    </div>
+                                    <div class="vehicle-info">
+                                        <div class="vehicle-name">@vehicle.VehicleName</div>
+                                        <div class="vehicle-plate">@vehicle.LicensePlate</div>
+                                    </div>
+                                </label>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="col-12">
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle me-2"></i>
+                                Henüz araç eklenmemiş. Önce araç ekleyin.
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+            
+            <div class="text-center">
+                <button type="button" id="generateGantt" class="btn btn-primary btn-lg">
+                    <i class="fas fa-chart-gantt me-2"></i>Gantt Chart Oluştur
+                </button>
+                <button type="button" id="selectAll" class="btn btn-info btn-lg ms-2">
+                    <i class="fas fa-check-double me-2"></i>Tümünü Seç
+                </button>
+                <button type="button" id="clearAll" class="btn btn-secondary btn-lg ms-2">
+                    <i class="fas fa-times me-2"></i>Seçimleri Temizle
+                </button>
+            </div>
+        }
+    </div>
+    
+    <div id="ganttChartArea" class="gantt-chart-wrapper" style="display: none;">
+        <div class="gantt-title">
+            <i class="fas fa-project-diagram"></i>
+            <span>Aktif Çalışma Süreleri Timeline</span>
+        </div>
+        
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);"></div>
+                <span>Aktif Çalışma</span>
+            </div>
+            <div class="legend-item">
+                <i class="fas fa-user-circle" style="color: #667eea;"></i>
+                <span>Hover ile kullanıcı bilgisi</span>
+            </div>
+        </div>
+        
+        <div id="ganttContent"></div>
+        <div id="ganttTimeline" class="timeline-axis"></div>
+    </div>
+    
+    <div id="noDataMessage" class="no-data-message">
+        <i class="fas fa-chart-gantt"></i>
+        <h5>Gantt Chart görüntülemek için araç seçin ve tarih aralığı belirleyin</h5>
+        <p>Birden fazla araç seçerek karşılaştırma yapabilirsiniz</p>
+    </div>
+</div>
+
+<div id="ganttTooltip" class="gantt-tooltip"></div>
+
+@section scripts {
+<script>
+    $(document).ready(function() {
+        // Select All / Clear All
+        $('#selectAll').click(function() {
+            $('.vehicle-select').prop('checked', true);
+        });
+        
+        $('#clearAll').click(function() {
+            $('.vehicle-select').prop('checked', false);
+        });
+        
+        // Date validation
+        $('#startDate').change(function() {
+            var startDate = $(this).val();
+            $('#endDate').attr('min', startDate);
+        });
+        
+        $('#endDate').change(function() {
+            var endDate = $(this).val();
+            $('#startDate').attr('max', endDate);
+        });
+        
+        // Generate Gantt Chart
+        $('#generateGantt').click(function() {
+            var selectedVehicles = [];
+            $('.vehicle-select:checked').each(function() {
+                selectedVehicles.push($(this).val());
+            });
+            
+            if (selectedVehicles.length === 0) {
+                alert('⚠️ Lütfen en az bir araç seçiniz!');
+                return;
+            }
+            
+            var startDate = $('#startDate').val();
+            var endDate = $('#endDate').val();
+            
+            if (!startDate || !endDate) {
+                alert('⚠️ Lütfen tarih aralığını seçiniz!');
+                return;
+            }
+            
+            // Show loading
+            $('#generateGantt').html('<i class="fas fa-spinner fa-spin me-2"></i>Yükleniyor...').prop('disabled', true);
+            
+            $.ajax({
+                url: '@Url.Action("GetData", "GanttChart")',
+                type: 'POST',
+                data: {
+                    vehicleIds: selectedVehicles,
+                    startDate: startDate,
+                    endDate: endDate,
+                    __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+                },
+                success: function(response) {
+                    $('#generateGantt').html('<i class="fas fa-chart-gantt me-2"></i>Gantt Chart Oluştur').prop('disabled', false);
+                    
+                    if (response.success) {
+                        if (response.data.length > 0) {
+                            renderGanttChart(response.data, startDate, endDate);
+                            $('#ganttChartArea').slideDown(500);
+                            $('#noDataMessage').hide();
+                            
+                            // Scroll to chart
+                            $('html, body').animate({
+                                scrollTop: $('#ganttChartArea').offset().top - 100
+                            }, 500);
+                        } else {
+                            alert('ℹ️ Seçilen kriterlere uygun veri bulunamadı!');
+                        }
+                    } else {
+                        alert('❌ Hata: ' + response.message);
+                    }
+                },
+                error: function(xhr, status, error) {
+                    $('#generateGantt').html('<i class="fas fa-chart-gantt me-2"></i>Gantt Chart Oluştur').prop('disabled', false);
+                    alert('❌ Sunucuya bağlanırken hata oluştu: ' + error);
+                }
+            });
+        });
+        
+        function renderGanttChart(data, startDate, endDate) {
+            var start = new Date(startDate);
+            var end = new Date(endDate);
+            var totalDays = Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1;
+            
+            // Group by vehicle
+            var grouped = {};
+            data.forEach(function(item) {
+                var key = item.vehicleName + '|' + item.licensePlate;
+                if (!grouped[key]) {
+                    grouped[key] = [];
+                }
+                grouped[key].push(item);
+            });
+            
+            var html = '';
+            var timelineHtml = '';
+            var today = new Date();
+            today.setHours(0, 0, 0, 0);
+            
+            // Generate timeline markers
+            for (var i = 0; i < totalDays; i++) {
+                var date = new Date(start);
+                date.setDate(date.getDate() + i);
+                
+                var isToday = date.getTime() === today.getTime();
+                var className = isToday ? 'timeline-marker today' : 'timeline-marker';
+                
+                timelineHtml += '<div class="' + className + '">' + 
+                    date.getDate() + '/' + (date.getMonth() + 1) + 
+                    (isToday ? '<br><small>Bugün</small>' : '') +
+                    '</div>';
+            }
+            
+            // Generate gantt rows
+            var colors = [
+                'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+                'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+                'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
+                'linear-gradient(135deg, #30cfd0 0%, #330867 100%)',
+                'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)'
+            ];
+            
+            var colorIndex = 0;
+            
+            Object.keys(grouped).forEach(function(vehicleKey) {
+                var parts = vehicleKey.split('|');
+                var vehicleName = parts[0];
+                var licensePlate = parts[1];
+                var vehicleColor = colors[colorIndex % colors.length];
+                colorIndex++;
+                
+                html += '<div class="gantt-row">';
+                html += '<div class="gantt-label">';
+                html += '<div class="vehicle-avatar">';
+                html += '<i class="fas fa-car"></i>';
+                html += '</div>';
+                html += '<div class="vehicle-details">';
+                html += '<div class="vehicle-name-text">' + vehicleName + '</div>';
+                html += '<div class="vehicle-plate-text">' + licensePlate + '</div>';
+                html += '</div>';
+                html += '</div>';
+                html += '<div class="gantt-timeline">';
+                
+                grouped[vehicleKey].forEach(function(item) {
+                    var itemStart = new Date(item.startDate);
+                    var dayOffset = Math.floor((itemStart - start) / (1000 * 60 * 60 * 24));
+                    var leftPercent = (dayOffset / totalDays) * 100;
+                    var widthPercent = Math.max((item.hours / 24 / totalDays) * 100, 2); // Minimum %2 görünürlük
+                    
+                    html += '<div class="gantt-bar" style="left: ' + leftPercent + '%; width: ' + widthPercent + '%; background: ' + vehicleColor + ';" ' +
+                        'data-vehicle="' + vehicleName + '" ' +
+                        'data-plate="' + licensePlate + '" ' +
+                        'data-date="' + itemStart.toLocaleDateString('tr-TR') + '" ' +
+                        'data-hours="' + item.hours.toFixed(1) + '" ' +
+                        'data-recorded-by="' + item.recordedBy + '">' +
+                        '<div class="bar-content">' +
+                        '<i class="fas fa-clock me-1"></i>' +
+                        '<span>' + item.hours.toFixed(1) + 'h</span>' +
+                        '</div>' +
+                        '</div>';
+                });
+                
+                html += '</div></div>';
+            });
+            
+            $('#ganttContent').html(html);
+            $('#ganttTimeline').html(timelineHtml);
+            
+            // Tooltip functionality
+            var tooltip = $('#ganttTooltip');
+            
+            $('.gantt-bar').hover(
+                function(e) {
+                    var vehicle = $(this).data('vehicle');
+                    var plate = $(this).data('plate');
+                    var date = $(this).data('date');
+                    var hours = $(this).data('hours');
+                    var recordedBy = $(this).data('recorded-by');
+                    
+                    var tooltipHtml = 
+                        '<div class="tooltip-header">' +
+                        '<i class="fas fa-car me-2"></i>' + vehicle +
+                        '</div>' +
+                        '<div class="tooltip-row">' +
+                        '<i class="fas fa-id-card"></i>' +
+                        '<strong>Plaka:</strong> ' + plate +
+                        '</div>' +
+                        '<div class="tooltip-row">' +
+                        '<i class="fas fa-calendar"></i>' +
+                        '<strong>Tarih:</strong> ' + date +
+                        '</div>' +
+                        '<div class="tooltip-row">' +
+                        '<i class="fas fa-clock"></i>' +
+                        '<strong>Süre:</strong> ' + hours + ' saat' +
+                        '</div>' +
+                        '<div class="tooltip-row">' +
+                        '<i class="fas fa-user-circle"></i>' +
+                        '<strong>Kaydeden:</strong> ' + recordedBy +
+                        '</div>';
+                    
+                    tooltip.html(tooltipHtml);
+                    tooltip.css({
+                        display: 'block',
+                        left: e.pageX + 15 + 'px',
+                        top: e.pageY + 15 + 'px'
+                    });
+                },
+                function() {
+                    tooltip.hide();
+                }
+            );
+            
+            $('.gantt-bar').mousemove(function(e) {
+                tooltip.css({
+                    left: e.pageX + 15 + 'px',
+                    top: e.pageY + 15 + 'px'
+                });
+            });
+        }
+    });
+</script>
+}

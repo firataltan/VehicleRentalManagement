@@ -39,6 +39,7 @@ namespace VehicleRentalManagement.Controllers
 
         // POST: GanttChart/GetData
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public JsonResult GetData(List<int> vehicleIds, DateTime startDate, DateTime endDate)
         {
             try
@@ -54,8 +55,8 @@ namespace VehicleRentalManagement.Controllers
                 {
                     vehicleName = d.VehicleName,
                     licensePlate = d.LicensePlate,
-                    startDate = d.StartDate.ToString("yyyy-MM-dd HH:mm"),
-                    endDate = d.EndDate.ToString("yyyy-MM-dd HH:mm"),
+                    startDate = d.StartDate.ToString("yyyy-MM-dd'T'HH:mm:ss"),
+                    endDate = d.EndDate.ToString("yyyy-MM-dd'T'HH:mm:ss"),
                     hours = Math.Round(d.Hours, 2),
                     recordedBy = d.RecordedBy,
                     type = d.Type

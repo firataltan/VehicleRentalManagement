@@ -45,7 +45,7 @@ namespace VehicleRentalManagement.DataAccess.Repositories
                 }
             }
 
-            return user;
+            return user; 
         }
 
         public IEnumerable<User> GetAll()

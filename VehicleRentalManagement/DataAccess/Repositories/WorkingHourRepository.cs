@@ -186,17 +186,29 @@ namespace VehicleRentalManagement.DataAccess.Repositories
 
             using (var conn = _db.GetConnection())
             {
+                // Build parameterized IN clause: @id0, @id1, ...
+                var idParameters = new List<string>();
+                for (int i = 0; i < vehicleIds.Count; i++)
+                {
+                    idParameters.Add($"@id{i}");
+                }
+
                 var query = @"SELECT v.VehicleName, v.LicensePlate, wh.RecordDate, 
                              wh.ActiveWorkingHours, u.FullName
                              FROM WorkingHours wh
                              INNER JOIN Vehicles v ON wh.VehicleId = v.VehicleId
                              INNER JOIN Users u ON wh.CreatedBy = u.UserId
-                             WHERE wh.VehicleId IN (" + string.Join(",", vehicleIds) + @")
+                             WHERE wh.VehicleId IN (" + string.Join(",", idParameters) + @")
                              AND wh.RecordDate BETWEEN @StartDate AND @EndDate
                              ORDER BY v.VehicleName, wh.RecordDate";
 
                 using (var cmd = new SqlCommand(query, conn))
                 {
+                    for (int i = 0; i < vehicleIds.Count; i++)
+                    {
+                        cmd.Parameters.AddWithValue($"@id{i}", vehicleIds[i]);
+                    }
+
                     cmd.Parameters.AddWithValue("@StartDate", startDate);
                     cmd.Parameters.AddWithValue("@EndDate", endDate);
 
