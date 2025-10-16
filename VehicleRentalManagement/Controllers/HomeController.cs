@@ -31,6 +31,14 @@ namespace VehicleRentalManagement.Controllers
             var summaries = _workingHourRepo.GetWeeklySummary();
             var allRecords = _workingHourRepo.GetAll().Take(10).ToList();
 
+            // DEBUG: Console'da verileri kontrol et
+            System.Diagnostics.Debug.WriteLine("=== CONTROLLER DEBUG ===");
+            foreach (var summary in summaries)
+            {
+                var total = summary.ActivePercentage + summary.IdlePercentage + summary.MaintenancePercentage;
+                System.Diagnostics.Debug.WriteLine($"{summary.VehicleName}: {summary.ActivePercentage}% + {summary.IdlePercentage}% + {summary.MaintenancePercentage}% = {total}%");
+            }
+
             var viewModel = new DashboardViewModel
             {
                 TotalVehicles = summaries.Count,

@@ -441,9 +441,22 @@
     $(document).ready(function() {
         // Chart Data
         var vehicleNames = [@Html.Raw(string.Join(",", Model.VehicleSummaries.Select(s => "'" + s.VehicleName + "'")))];
-        var activeData = [@Html.Raw(string.Join(",", Model.VehicleSummaries.Select(s => s.ActivePercentage.ToString("F2"))))];
-        var idleData = [@Html.Raw(string.Join(",", Model.VehicleSummaries.Select(s => s.IdlePercentage.ToString("F2"))))];
-        var maintenanceData = [@Html.Raw(string.Join(",", Model.VehicleSummaries.Select(s => s.MaintenancePercentage.ToString("F2"))))];
+        var activeData = [@Html.Raw(string.Join(",", Model.VehicleSummaries.Select(s => s.ActivePercentage.ToString("F2", System.Globalization.CultureInfo.InvariantCulture))))];
+        var idleData = [@Html.Raw(string.Join(",", Model.VehicleSummaries.Select(s => s.IdlePercentage.ToString("F2", System.Globalization.CultureInfo.InvariantCulture))))];
+        var maintenanceData = [@Html.Raw(string.Join(",", Model.VehicleSummaries.Select(s => s.MaintenancePercentage.ToString("F2", System.Globalization.CultureInfo.InvariantCulture))))];
+        
+        // DEBUG: Console'da verileri kontrol et
+        console.log('=== CHART DATA DEBUG ===');
+        console.log('Vehicle Names:', vehicleNames);
+        console.log('Active Data:', activeData);
+        console.log('Idle Data:', idleData);
+        console.log('Maintenance Data:', maintenanceData);
+        
+        // Her aracın toplamını kontrol et
+        for (var i = 0; i < vehicleNames.length; i++) {
+            var total = activeData[i] + idleData[i] + maintenanceData[i];
+            console.log(vehicleNames[i] + ': ' + activeData[i] + '% + ' + idleData[i] + '% + ' + maintenanceData[i] + '% = ' + total + '%');
+        }
         
         // Create Chart
         var ctx = document.getElementById('performanceChart').getContext('2d');
@@ -524,6 +537,14 @@
                         callbacks: {
                             label: function(context) {
                                 return context.dataset.label + ': ' + context.parsed.y.toFixed(1) + '%';
+                            },
+                            afterBody: function(context) {
+                                // Toplam yüzdeyi hesapla
+                                var dataIndex = context[0].dataIndex;
+                                var total = activeData[dataIndex] + idleData[dataIndex] + maintenanceData[dataIndex];
+                                // Toplam %100'e yakınsa DOĞRU, değilse YANLIŞ göster
+                                var status = (Math.abs(total - 100.0) < 0.1) ? '✅ DOĞRU' : '❌ YANLIŞ';
+                                return '\nToplam: ' + total.toFixed(1) + '% (' + status + ')';
                             }
                         }
                     }
