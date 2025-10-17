@@ -1,11 +1,16 @@
 ﻿@model VehicleRentalManagement.Models.ViewModels.LoginViewModel
 
+@{
+    ViewBag.Title = "Giriş Yap";
+    Layout = null; // Ana layout'u kullanmayacağız, kendi layout'umuzu oluşturacağız
+}
+
 <!DOCTYPE html>
 <html lang="tr">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Giriş Yap - Araç Kiralama Yönetim Sistemi</title>
+    <title>@ViewBag.Title - Araç Kiralama Yönetim Sistemi</title>
     
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
@@ -23,30 +28,101 @@
             background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
             min-height: 100vh;
             display: flex;
-            align-items: center;
-            justify-content: center;
+            flex-direction: column;
             position: relative;
-            overflow: hidden;
+            overflow-x: hidden;
         }
         
         body::before {
             content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
             background: 
                 radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px),
                 radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px);
             background-size: 50px 50px;
             background-position: 0 0, 25px 25px;
             animation: moveBackground 20s linear infinite;
+            z-index: -1;
         }
         
         @@keyframes moveBackground {
             0% { transform: translate(0, 0); }
             100% { transform: translate(50px, 50px); }
+        }
+        
+        /* Header Styles */
+        .login-header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+            padding: 1rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.18);
+            position: relative;
+            z-index: 1000;
+        }
+        
+        .navbar-brand {
+            font-weight: 800;
+            font-size: 1.5rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+        
+        .navbar-brand:hover {
+            transform: translateY(-2px);
+            text-decoration: none;
+        }
+        
+        .nav-link {
+            color: #2d3748 !important;
+            font-weight: 500;
+            margin: 0 0.5rem;
+            padding: 0.5rem 1rem !important;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            position: relative;
+            text-decoration: none;
+        }
+        
+        .nav-link::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            transition: all 0.3s ease;
+            transform: translateX(-50%);
+        }
+        
+        .nav-link:hover::before {
+            width: 80%;
+        }
+        
+        .nav-link:hover {
+            background: rgba(102, 126, 234, 0.1);
+            transform: translateY(-2px);
+            text-decoration: none;
+        }
+        
+        /* Main Content */
+        .login-main {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem 0;
+            position: relative;
+            z-index: 1;
         }
         
         .login-container {
@@ -78,7 +154,7 @@
             }
         }
         
-        .login-header {
+        .login-card-header {
             text-align: center;
             margin-bottom: 2rem;
         }
@@ -263,7 +339,7 @@
             border-left: 4px solid #f56565;
         }
         
-        .login-footer {
+        .login-card-footer {
             margin-top: 2rem;
             padding-top: 1.5rem;
             border-top: 1px solid #e2e8f0;
@@ -295,6 +371,36 @@
             color: #2d3748;
         }
         
+        /* Footer Styles */
+        .login-footer {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            padding: 2rem 0;
+            box-shadow: 0 -4px 16px rgba(0,0,0,0.08);
+            border-top: 1px solid rgba(255, 255, 255, 0.18);
+            position: relative;
+            z-index: 1000;
+        }
+        
+        .footer-content {
+            text-align: center;
+        }
+        
+        .footer-content p {
+            margin: 0.5rem 0;
+            color: #718096;
+        }
+        
+        .footer-content .footer-title {
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 0.5rem;
+        }
+        
+        .footer-content .footer-subtitle {
+            font-size: 0.9rem;
+        }
+        
         @@media (max-width: 576px) {
             .login-container {
                 padding: 1rem;
@@ -307,13 +413,47 @@
             .login-title {
                 font-size: 1.5rem;
             }
+            
+            .navbar-brand {
+                font-size: 1.2rem;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="login-container">
+    <!-- Header -->
+    <header class="login-header">
+        <div class="container-fluid px-4">
+            <div class="d-flex justify-content-between align-items-center">
+                <a class="navbar-brand" href="@Url.Action("Index", "Home")">
+                    <i class="fas fa-car-side me-2"></i>
+                    Araç Kiralama
+                </a>
+                <nav class="d-flex align-items-center">
+                    <a class="nav-link" href="@Url.Action("Index", "Home")">
+                        <i class="fas fa-home me-1"></i> Ana Sayfa
+                    </a>
+                    <a class="nav-link" href="@Url.Action("Index", "WorkingHour")">
+                        <i class="fas fa-clock me-1"></i> Çalışma Süreleri
+                    </a>
+                    <div class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-user me-1"></i> Kullanıcı
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="#"><i class="fas fa-user-circle me-2"></i> Profil</a></li>
+                        </ul>
+                    </div>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="login-main">
+        <div class="login-container">
         <div class="login-card">
-            <div class="login-header">
+            <div class="login-card-header">
                 <div class="login-icon">
                     <i class="fas fa-car-side"></i>
                 </div>
@@ -368,7 +508,7 @@
                 </button>
             </form>
             
-            <div class="login-footer">
+            <div class="login-card-footer">
                 <div class="test-credentials">
                     <h6><i class="fas fa-info-circle me-2"></i>Test Hesapları</h6>
                     <p><strong>Admin:</strong> admin / Admin123</p>
@@ -376,7 +516,21 @@
                 </div>
             </div>
         </div>
-    </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="login-footer">
+        <div class="container">
+            <div class="footer-content">
+                <p class="footer-title">Araç Kiralama Yönetim Sistemi © @DateTime.Now.Year</p>
+                <p class="footer-subtitle">Developed by <strong>Fırat Altan</strong> using ASP.NET MVC</p>
+            </div>
+        </div>
+    </footer>
+    
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     
     <script>
         function togglePassword() {

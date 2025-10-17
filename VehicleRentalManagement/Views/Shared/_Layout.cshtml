@@ -395,6 +395,12 @@
                         </a>
                     </li>
 
+                    <li class="nav-item">
+                        <a class="nav-link" href="@Url.Action("About", "Home")">
+                            <i class="fas fa-info-circle me-1"></i> Hakkında
+                        </a>
+                    </li>
+
                     @if (ViewBag.IsAdmin == true)
                     {
                         <li class="nav-item dropdown">
@@ -475,7 +481,7 @@
                 <strong>Araç Kiralama Yönetim Sistemi</strong> &copy; @DateTime.Now.Year
             </p>
             <p class="mb-0 text-muted small">
-                Developed with <i class="fas fa-heart text-danger"></i> using ASP.NET MVC
+                Developed by <strong>Fırat Altan</strong> using ASP.NET MVC
             </p>
         </div>
     </footer>
