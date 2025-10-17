@@ -92,10 +92,10 @@ namespace VehicleRentalManagement.Controllers
                 return RedirectToAction("AccessDenied", "Account");
             }
 
-            // Validation: Total hours should not exceed 168 (7x24)
-            if (workingHour.ActiveWorkingHours + workingHour.MaintenanceHours > 168)
+            // Validation: Total hours should not exceed 24 (daily limit)
+            if (workingHour.ActiveWorkingHours + workingHour.MaintenanceHours > 24)
             {
-                ModelState.AddModelError("", "Aktif çalışma ve bakım sürelerinin toplamı 168 saati (7x24) geçemez!");
+                ModelState.AddModelError("", "Aktif çalışma ve bakım sürelerinin toplamı 24 saati geçemez!");
             }
 
             if (ModelState.IsValid)
@@ -178,10 +178,10 @@ namespace VehicleRentalManagement.Controllers
                 return RedirectToAction("Index");
             }
 
-            // Validation: Total hours should not exceed 168 (7x24)
-            if (workingHour.ActiveWorkingHours + workingHour.MaintenanceHours > 168)
+            // Validation: Total hours should not exceed 24 (daily limit)
+            if (workingHour.ActiveWorkingHours + workingHour.MaintenanceHours > 24)
             {
-                ModelState.AddModelError("", "Aktif çalışma ve bakım sürelerinin toplamı 168 saati (7x24) geçemez!");
+                ModelState.AddModelError("", "Aktif çalışma ve bakım sürelerinin toplamı 24 saati geçemez!");
             }
 
             if (ModelState.IsValid)

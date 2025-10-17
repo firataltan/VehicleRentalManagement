@@ -220,7 +220,7 @@
                                   placeholder = "0.0", id = "activeHours" })
                     </div>
                     @Html.ValidationMessageFor(m => m.ActiveWorkingHours, "", new { @class = "text-danger small mt-1 d-block" })
-                    <small class="text-muted">Örnek: 156.5 (haftalık toplam)</small>
+                    <small class="text-muted">Örnek: 22.5 (günlük toplam)</small>
                 </div>
                 
                 <div class="col-md-6 mb-4">
@@ -232,7 +232,7 @@
                                   placeholder = "0.0", id = "maintenanceHours" })
                     </div>
                     @Html.ValidationMessageFor(m => m.MaintenanceHours, "", new { @class = "text-danger small mt-1 d-block" })
-                    <small class="text-muted">Örnek: 2.8 (haftalık toplam)</small>
+                    <small class="text-muted">Örnek: 1.5 (günlük toplam)</small>
                 </div>
             </div>
             
@@ -260,7 +260,7 @@
                         <i class="fas fa-pause-circle" style="color: #667eea;"></i>
                         <span>Boşta Bekleme</span>
                     </div>
-                    <div class="calc-value idle" id="displayIdle">168.0 saat</div>
+                    <div class="calc-value idle" id="displayIdle">24.0 saat</div>
                 </div>
             </div>
             
@@ -293,14 +293,14 @@
         function calculateIdleHours() {
             var active = parseFloat($('#activeHours').val()) || 0;
             var maintenance = parseFloat($('#maintenanceHours').val()) || 0;
-            var idle = 168 - (active + maintenance);
+            var idle = 24 - (active + maintenance);
             
             // Update display
             $('#displayActive').text(active.toFixed(1) + ' saat');
             $('#displayMaintenance').text(maintenance.toFixed(1) + ' saat');
             $('#displayIdle').text(idle.toFixed(1) + ' saat');
             
-            // Validation: Check if total exceeds 168 hours
+            // Validation: Check if total exceeds 24 hours
             if (idle < 0) {
                 $('#calculator').css('border-color', '#f56565');
                 $('#displayIdle').css({
@@ -327,9 +327,9 @@
             var active = parseFloat($('#activeHours').val()) || 0;
             var maintenance = parseFloat($('#maintenanceHours').val()) || 0;
             
-            if (active + maintenance > 168) {
+            if (active + maintenance > 24) {
                 e.preventDefault();
-                alert('Hata: Aktif çalışma ve bakım sürelerinin toplamı 168 saati (7x24) geçemez!\n\nGirilen toplam: ' + (active + maintenance).toFixed(1) + ' saat');
+                alert('Hata: Aktif çalışma ve bakım sürelerinin toplamı 24 saati geçemez!\n\nGirilen toplam: ' + (active + maintenance).toFixed(1) + ' saat');
                 return false;
             }
             

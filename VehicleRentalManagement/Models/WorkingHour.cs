@@ -17,15 +17,15 @@ namespace VehicleRentalManagement.Models
         public DateTime RecordDate { get; set; }
 
         [Required(ErrorMessage = "Aktif çalışma süresi gereklidir")]
-        [Range(0, 168, ErrorMessage = "Aktif çalışma süresi 0-168 saat arasında olmalıdır")]
+        [Range(0, 24, ErrorMessage = "Aktif çalışma süresi 0-24 saat arasında olmalıdır")]
         [Display(Name = "Aktif Çalışma Süresi (saat)")]
-        [RegularExpression(@"^\d+([.,]\d{1,2})?$", ErrorMessage = "Geçerli bir saat değeri giriniz (örn: 156.5 veya 156,5)")]
+        [RegularExpression(@"^\d+([.,]\d{1,2})?$", ErrorMessage = "Geçerli bir saat değeri giriniz (örn: 22.5 veya 22,5)")]
         public decimal ActiveWorkingHours { get; set; }
 
         [Required(ErrorMessage = "Bakım süresi gereklidir")]
-        [Range(0, 168, ErrorMessage = "Bakım süresi 0-168 saat arasında olmalıdır")]
+        [Range(0, 24, ErrorMessage = "Bakım süresi 0-24 saat arasında olmalıdır")]
         [Display(Name = "Bakım Süresi (saat)")]
-        [RegularExpression(@"^\d+(\.\d{1,2})?$", ErrorMessage = "Geçerli bir saat değeri giriniz (örn: 2.8)")]
+        [RegularExpression(@"^\d+([.,]\d{1,2})?$", ErrorMessage = "Geçerli bir saat değeri giriniz (örn: 1.5 veya 1,5)")]
         public decimal MaintenanceHours { get; set; }
 
         // Computed column - Database'de otomatik hesaplanıyor
