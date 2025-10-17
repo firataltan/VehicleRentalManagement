@@ -220,14 +220,15 @@
     }
     
     .gantt-label {
-        min-width: 250px;
-        max-width: 250px;
+        min-width: 200px;
+        max-width: 200px;
         font-weight: 600;
         color: #2d3748;
-        padding-right: 2rem;
+        padding-right: 1rem;
         display: flex;
         align-items: center;
         gap: 0.75rem;
+        flex-shrink: 0;
     }
     
     .gantt-label .vehicle-avatar {
@@ -267,6 +268,7 @@
         background: linear-gradient(90deg, #f7fafc 0%, #edf2f7 100%);
         border-radius: 10px;
         overflow: visible;
+        margin-left: 0;
     }
     
     .gantt-bar {
@@ -374,7 +376,7 @@
     .timeline-axis {
         display: flex;
         margin-top: 1.5rem;
-        padding-left: 250px;
+        padding-left: 200px;
         border-top: 2px solid #e2e8f0;
         padding-top: 1rem;
     }
@@ -387,6 +389,7 @@
         font-weight: 600;
         padding: 0.5rem 0;
         position: relative;
+        min-width: 0;
     }
     
     .timeline-marker::before {
@@ -738,7 +741,7 @@
                 grouped[vehicleKey].forEach(function(item) {
                     var itemStart = new Date(item.startDate);
                     var dayOffset = Math.floor((itemStart - start) / (1000 * 60 * 60 * 24));
-                    var leftPercent = (dayOffset / totalDays) * 100;
+                    var leftPercent = Math.max((dayOffset / totalDays) * 100, 0);
                     var widthPercent = Math.max((item.hours / 24 / totalDays) * 100, 2); // Minimum %2 görünürlük
                     
                     html += '<div class="gantt-bar" style="left: ' + leftPercent + '%; width: ' + widthPercent + '%; background: ' + vehicleColor + ';" ' +
