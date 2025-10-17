@@ -1,15 +1,42 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
-using VehicleRentalManagement.DataAccess; // DatabaseConnection için
+using VehicleRentalManagement.DataAccess; // DatabaseConnection iï¿½in
+
+using System.Globalization;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Culture ayarlarÄ± - TÃ¼rkÃ§e locale iÃ§in
+var cultureInfo = new CultureInfo("tr-TR");
+CultureInfo.DefaultThreadCurrentCulture = cultureInfo;
+CultureInfo.DefaultThreadCurrentUICulture = cultureInfo;
+
 // MVC servisleri ekle
-builder.Services.AddControllersWithViews();
+builder.Services.AddControllersWithViews(options =>
+{
+    // Model binding iÃ§in culture ayarlarÄ±
+    options.ModelBindingMessageProvider.SetValueMustNotBeNullAccessor(
+        _ => "Bu alan gereklidir.");
+});
+
+// Decimal model binder ekle
+builder.Services.AddMvc(options =>
+{
+    options.ModelBinderProviders.Insert(0, new VehicleRentalManagement.Models.DecimalModelBinderProvider());
+});
+
+// Request localization ayarlarÄ±
+builder.Services.Configure<RequestLocalizationOptions>(options =>
+{
+    var supportedCultures = new[] { new CultureInfo("tr-TR") };
+    options.DefaultRequestCulture = new Microsoft.AspNetCore.Localization.RequestCulture("tr-TR");
+    options.SupportedCultures = supportedCultures;
+    options.SupportedUICultures = supportedCultures;
+});
 
 // DatabaseConnection servisini ekle
 builder.Services.AddSingleton<DatabaseConnection>();
 
-// Oturum (Session) desteði ekle (isteðe baðlý)
+// Oturum (Session) desteï¿½i ekle (isteï¿½e baï¿½lï¿½)
 builder.Services.AddSession(options =>
 {
     options.IdleTimeout = TimeSpan.FromMinutes(30);
@@ -17,20 +44,20 @@ builder.Services.AddSession(options =>
     options.Cookie.IsEssential = true;
 });
 
-// Cookie tabanlý kimlik doðrulama
+// Cookie tabanlï¿½ kimlik doï¿½rulama
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
-        options.LoginPath = "/Account/Login";        // Oturum açma sayfasý
-        options.LogoutPath = "/Account/Logout";      // Oturum kapatma sayfasý
-        options.AccessDeniedPath = "/Account/AccessDenied"; // Yetkisiz eriþim yönlendirmesi
+        options.LoginPath = "/Account/Login";        // Oturum aï¿½ma sayfasï¿½
+        options.LogoutPath = "/Account/Logout";      // Oturum kapatma sayfasï¿½
+        options.AccessDeniedPath = "/Account/AccessDenied"; // Yetkisiz eriï¿½im yï¿½nlendirmesi
     });
 
 builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
-// Hata yönetimi
+// Hata yï¿½netimi
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
@@ -42,7 +69,10 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
-// Kimlik doðrulama ve yetkilendirme middleware’leri
+// Request localization middleware
+app.UseRequestLocalization();
+
+// Kimlik doï¿½rulama ve yetkilendirme middlewareï¿½leri
 app.UseSession();
 app.UseAuthentication();
 app.UseAuthorization();

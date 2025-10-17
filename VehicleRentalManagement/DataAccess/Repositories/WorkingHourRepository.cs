@@ -27,10 +27,43 @@ namespace VehicleRentalManagement.DataAccess.Repositories
                              INNER JOIN Vehicles v ON wh.VehicleId = v.VehicleId
                              LEFT JOIN Users u1 ON wh.CreatedBy = u1.UserId
                              LEFT JOIN Users u2 ON wh.ModifiedBy = u2.UserId
+                             WHERE v.IsActive = 1
                              ORDER BY wh.RecordDate DESC, v.VehicleName";
 
                 using (var cmd = new SqlCommand(query, conn))
                 {
+                    conn.Open();
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            workingHours.Add(MapToWorkingHour(reader));
+                        }
+                    }
+                }
+            }
+
+            return workingHours;
+        }
+
+        public IEnumerable<WorkingHour> GetByUserId(int userId)
+        {
+            var workingHours = new List<WorkingHour>();
+
+            using (var conn = _db.GetConnection())
+            {
+                var query = @"SELECT wh.*, v.VehicleName, v.LicensePlate,
+                             u1.FullName as CreatedByName, u2.FullName as ModifiedByName
+                             FROM WorkingHours wh
+                             INNER JOIN Vehicles v ON wh.VehicleId = v.VehicleId
+                             LEFT JOIN Users u1 ON wh.CreatedBy = u1.UserId
+                             LEFT JOIN Users u2 ON wh.ModifiedBy = u2.UserId
+                             WHERE wh.CreatedBy = @UserId AND v.IsActive = 1
+                             ORDER BY wh.RecordDate DESC, v.VehicleName";
+
+                using (var cmd = new SqlCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue("@UserId", userId);
                     conn.Open();
                     using (var reader = cmd.ExecuteReader())
                     {
@@ -57,7 +90,7 @@ namespace VehicleRentalManagement.DataAccess.Repositories
                              INNER JOIN Vehicles v ON wh.VehicleId = v.VehicleId
                              LEFT JOIN Users u1 ON wh.CreatedBy = u1.UserId
                              LEFT JOIN Users u2 ON wh.ModifiedBy = u2.UserId
-                             WHERE wh.WorkingHourId = @WorkingHourId";
+                             WHERE wh.WorkingHourId = @WorkingHourId AND v.IsActive = 1";
 
                 using (var cmd = new SqlCommand(query, conn))
                 {
@@ -180,6 +213,64 @@ namespace VehicleRentalManagement.DataAccess.Repositories
             return summaries;
         }
 
+        public List<VehicleSummary> GetWeeklySummaryByUserId(int userId)
+        {
+            var summaries = new List<VehicleSummary>();
+
+            using (var conn = _db.GetConnection())
+            {
+                var query = @"SELECT v.VehicleId, v.VehicleName, v.LicensePlate,
+                             ISNULL(SUM(wh.ActiveWorkingHours), 0) as TotalActiveHours,
+                             ISNULL(SUM(wh.MaintenanceHours), 0) as TotalMaintenanceHours,
+                             ISNULL(SUM(wh.IdleHours), 0) as TotalIdleHours,
+                             CASE 
+                                 WHEN ISNULL(SUM(wh.ActiveWorkingHours + wh.MaintenanceHours + wh.IdleHours), 0) = 0 THEN 0
+                                 ELSE ROUND((ISNULL(SUM(wh.ActiveWorkingHours), 0) * 100.0) / ISNULL(SUM(wh.ActiveWorkingHours + wh.MaintenanceHours + wh.IdleHours), 1), 2)
+                             END as ActivePercentage,
+                             CASE 
+                                 WHEN ISNULL(SUM(wh.ActiveWorkingHours + wh.MaintenanceHours + wh.IdleHours), 0) = 0 THEN 0
+                                 ELSE ROUND((ISNULL(SUM(wh.MaintenanceHours), 0) * 100.0) / ISNULL(SUM(wh.ActiveWorkingHours + wh.MaintenanceHours + wh.IdleHours), 1), 2)
+                             END as MaintenancePercentage,
+                             CASE 
+                                 WHEN ISNULL(SUM(wh.ActiveWorkingHours + wh.MaintenanceHours + wh.IdleHours), 0) = 0 THEN 0
+                                 ELSE ROUND((ISNULL(SUM(wh.IdleHours), 0) * 100.0) / ISNULL(SUM(wh.ActiveWorkingHours + wh.MaintenanceHours + wh.IdleHours), 1), 2)
+                             END as IdlePercentage,
+                             COUNT(wh.WorkingHourId) as RecordCount
+                             FROM Vehicles v
+                             LEFT JOIN WorkingHours wh ON v.VehicleId = wh.VehicleId AND wh.CreatedBy = @UserId
+                             WHERE v.IsActive = 1
+                             GROUP BY v.VehicleId, v.VehicleName, v.LicensePlate
+                             ORDER BY v.VehicleName";
+
+                using (var cmd = new SqlCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue("@UserId", userId);
+                    conn.Open();
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            summaries.Add(new VehicleSummary
+                            {
+                                VehicleId = reader.GetInt32(0),
+                                VehicleName = reader.GetString(1),
+                                LicensePlate = reader.GetString(2),
+                                TotalActiveHours = reader.IsDBNull(3) ? 0 : reader.GetDecimal(3),
+                                TotalMaintenanceHours = reader.IsDBNull(4) ? 0 : reader.GetDecimal(4),
+                                TotalIdleHours = reader.IsDBNull(5) ? 0 : reader.GetDecimal(5),
+                                ActivePercentage = reader.IsDBNull(6) ? 0 : reader.GetDecimal(6),
+                                MaintenancePercentage = reader.IsDBNull(7) ? 0 : reader.GetDecimal(7),
+                                IdlePercentage = reader.IsDBNull(8) ? 0 : reader.GetDecimal(8),
+                                RecordCount = reader.IsDBNull(9) ? 0 : reader.GetInt32(9)
+                            });
+                        }
+                    }
+                }
+            }
+
+            return summaries;
+        }
+
         public List<GanttDataItem> GetGanttData(List<int> vehicleIds, DateTime startDate, DateTime endDate)
         {
             var data = new List<GanttDataItem>();
@@ -200,6 +291,7 @@ namespace VehicleRentalManagement.DataAccess.Repositories
                              INNER JOIN Users u ON wh.CreatedBy = u.UserId
                              WHERE wh.VehicleId IN (" + string.Join(",", idParameters) + @")
                              AND wh.RecordDate BETWEEN @StartDate AND @EndDate
+                             AND v.IsActive = 1
                              ORDER BY v.VehicleName, wh.RecordDate";
 
                 using (var cmd = new SqlCommand(query, conn))
