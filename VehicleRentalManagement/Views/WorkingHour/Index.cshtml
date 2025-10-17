@@ -128,9 +128,12 @@
             <h2 class="mb-2"><i class="fas fa-clock me-2"></i>Çalışma Süreleri Yönetimi</h2>
             <p class="mb-0 opacity-75">Araçların günlük çalışma sürelerini görüntüleyin ve yönetin</p>
         </div>
-        <a href="@Url.Action("Create")" class="btn btn-light btn-lg">
-            <i class="fas fa-plus-circle me-2"></i>Yeni Kayıt Ekle
-        </a>
+        @if (ViewBag.IsAdmin == false)
+        {
+            <a href="@Url.Action("Create")" class="btn btn-light btn-lg">
+                <i class="fas fa-plus-circle me-2"></i>Yeni Kayıt Ekle
+            </a>
+        }
     </div>
 </div>
 
@@ -224,25 +227,51 @@
                                 }
                             </td>
                             <td>
-                                <i class="fas fa-user-circle me-1"></i>
-                                @record.CreatedByName
-                                <br>
-                                <small class="text-muted">@record.CreatedDate.ToString("dd.MM.yyyy HH:mm")</small>
+                                <div class="user-info">
+                                    <div class="d-flex align-items-center mb-1">
+                                        <i class="fas fa-user-circle me-2 text-primary"></i>
+                                        <strong>@record.CreatedByName</strong>
+                                    </div>
+                                    <small class="text-muted">
+                                        <i class="fas fa-calendar-alt me-1"></i>
+                                        @record.CreatedDate.ToString("dd.MM.yyyy HH:mm")
+                                    </small>
+                                    @if (record.ModifiedByName != null && !string.IsNullOrEmpty(record.ModifiedByName))
+                                    {
+                                        <br>
+                                        <small class="text-info">
+                                            <i class="fas fa-edit me-1"></i>
+                                            Düzenleyen: @record.ModifiedByName
+                                            <br>
+                                            <i class="fas fa-calendar-alt me-1"></i>
+                                            @record.ModifiedDate?.ToString("dd.MM.yyyy HH:mm")
+                                        </small>
+                                    }
+                                </div>
                             </td>
                             <td>
-                                <a href="@Url.Action("Edit", new { id = record.WorkingHourId })"
-                                   class="btn btn-warning action-btn"
-                                   title="Düzenle">
-                                    <i class="fas fa-edit"></i>
-                                </a>
-                                <button type="button"
-                                        class="btn btn-danger action-btn delete-btn"
-                                        data-id="@record.WorkingHourId"
-                                        data-vehicle="@record.VehicleName"
-                                        data-date="@record.RecordDate.ToString("dd.MM.yyyy")"
-                                        title="Sil">
-                                    <i class="fas fa-trash"></i>
-                                </button>
+                                @if (ViewBag.IsAdmin == false)
+                                {
+                                    <a href="@Url.Action("Edit", new { id = record.WorkingHourId })"
+                                       class="btn btn-warning action-btn"
+                                       title="Düzenle">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <button type="button"
+                                            class="btn btn-danger action-btn delete-btn"
+                                            data-id="@record.WorkingHourId"
+                                            data-vehicle="@record.VehicleName"
+                                            data-date="@record.RecordDate.ToString("dd.MM.yyyy")"
+                                            title="Sil">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">
+                                        <i class="fas fa-eye me-1"></i>Sadece Görüntüleme
+                                    </span>
+                                }
                             </td>
                         </tr>
                     }
@@ -258,9 +287,12 @@ else
             <i class="fas fa-clipboard-list"></i>
             <h4>Henüz çalışma süresi kaydı eklenmemiş</h4>
             <p class="text-muted mb-4">Yeni bir kayıt eklemek için yukarıdaki butona tıklayın.</p>
-            <a href="@Url.Action("Create")" class="btn btn-primary">
-                <i class="fas fa-plus-circle me-2"></i>İlk Kaydı Ekle
-            </a>
+            @if (ViewBag.IsAdmin == false)
+            {
+                <a href="@Url.Action("Create")" class="btn btn-primary">
+                    <i class="fas fa-plus-circle me-2"></i>İlk Kaydı Ekle
+                </a>
+            }
         </div>
     </div>
 }

@@ -1,0 +1,202 @@
+@{
+    ViewBag.Title = "Erişim Reddedildi";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+    .access-denied-container {
+        background: white;
+        border-radius: 20px;
+        padding: 3rem;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        text-align: center;
+        max-width: 600px;
+        margin: 2rem auto;
+    }
+    
+    .access-denied-header {
+        background: linear-gradient(135deg, #e53e3e 0%, #c53030 100%);
+        color: white;
+        border-radius: 16px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 15px rgba(229, 62, 62, 0.3);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .access-denied-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -10%;
+        width: 300px;
+        height: 300px;
+        background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+        animation: pulse 4s ease-in-out infinite;
+    }
+    
+    @@keyframes pulse {
+        0%, 100% { transform: scale(1) rotate(0deg); }
+        50% { transform: scale(1.1) rotate(10deg); }
+    }
+    
+    .access-denied-header h2 {
+        margin-bottom: 0.5rem;
+        font-weight: 800;
+        position: relative;
+        z-index: 1;
+    }
+    
+    .access-denied-header p {
+        position: relative;
+        z-index: 1;
+        margin-bottom: 0;
+        opacity: 0.9;
+    }
+    
+    .error-icon {
+        font-size: 4rem;
+        color: #e53e3e;
+        margin-bottom: 1.5rem;
+        animation: bounce 2s ease-in-out infinite;
+    }
+    
+    @@keyframes bounce {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-10px); }
+    }
+    
+    .error-message {
+        font-size: 1.1rem;
+        color: #4a5568;
+        margin-bottom: 2rem;
+        line-height: 1.6;
+    }
+    
+    .action-buttons {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+    
+    .btn-back {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        color: white;
+        padding: 0.75rem 2rem;
+        border-radius: 12px;
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .btn-back:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        color: white;
+        text-decoration: none;
+    }
+    
+    .btn-home {
+        background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+        border: none;
+        color: white;
+        padding: 0.75rem 2rem;
+        border-radius: 12px;
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .btn-home:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(72, 187, 120, 0.4);
+        color: white;
+        text-decoration: none;
+    }
+    
+    .user-info {
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        border: 2px solid rgba(102, 126, 234, 0.1);
+    }
+    
+    .user-info h5 {
+        color: #2d3748;
+        margin-bottom: 1rem;
+        font-weight: 700;
+    }
+    
+    .user-detail {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 0.5rem;
+        color: #4a5568;
+    }
+    
+    .user-detail i {
+        width: 20px;
+        color: #667eea;
+    }
+    
+    .user-detail:last-child {
+        margin-bottom: 0;
+    }
+</style>
+
+<div class="access-denied-container">
+    <div class="access-denied-header">
+        <h2><i class="fas fa-ban me-2"></i>Erişim Reddedildi</h2>
+        <p>Bu sayfaya erişim yetkiniz bulunmamaktadır</p>
+    </div>
+    
+    <div class="error-icon">
+        <i class="fas fa-exclamation-triangle"></i>
+    </div>
+    
+    <div class="error-message">
+        <p><strong>Üzgünüz!</strong> Bu işlemi gerçekleştirmek için gerekli yetkiniz bulunmamaktadır.</p>
+        <p>Lütfen yöneticinizle iletişime geçin veya ana sayfaya dönün.</p>
+    </div>
+    
+    @if (ViewBag.CurrentUserRole != null)
+    {
+        <div class="user-info">
+            <h5><i class="fas fa-user-circle me-2"></i>Kullanıcı Bilgileri</h5>
+            <div class="user-detail">
+                <i class="fas fa-user"></i>
+                <span><strong>Kullanıcı Adı:</strong> @(ViewBag.CurrentUsername ?? "Bilinmiyor")</span>
+            </div>
+            <div class="user-detail">
+                <i class="fas fa-id-card"></i>
+                <span><strong>Ad Soyad:</strong> @(ViewBag.CurrentUserFullName ?? "Bilinmiyor")</span>
+            </div>
+            <div class="user-detail">
+                <i class="fas fa-user-shield"></i>
+                <span><strong>Rol:</strong> @(ViewBag.CurrentUserRole ?? "Bilinmiyor")</span>
+            </div>
+        </div>
+    }
+    
+    <div class="action-buttons">
+        <a href="javascript:history.back()" class="btn-back">
+            <i class="fas fa-arrow-left"></i>
+            Geri Dön
+        </a>
+        <a href="@Url.Action("Index", "Home")" class="btn-home">
+            <i class="fas fa-home"></i>
+            Ana Sayfa
+        </a>
+    </div>
+</div>

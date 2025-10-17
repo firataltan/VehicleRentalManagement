@@ -23,6 +23,7 @@ namespace VehicleRentalManagement.Controllers
         // GET: WorkingHour
         public ActionResult Index()
         {
+            // Hem Admin hem User çalışma sürelerini görüntüleyebilir
             if (!IsUser && !IsAdmin)
             {
                 return RedirectToAction("AccessDenied", "Account");
@@ -36,7 +37,8 @@ namespace VehicleRentalManagement.Controllers
         [HttpGet]
         public ActionResult Create()
         {
-            if (!IsUser && !IsAdmin)
+            // Sadece User'lar çalışma süresi ekleyebilir
+            if (!IsUser)
             {
                 return RedirectToAction("AccessDenied", "Account");
             }
@@ -72,7 +74,8 @@ namespace VehicleRentalManagement.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult Create(WorkingHour workingHour)
         {
-            if (!IsUser && !IsAdmin)
+            // Sadece User'lar çalışma süresi ekleyebilir
+            if (!IsUser)
             {
                 return RedirectToAction("AccessDenied", "Account");
             }
@@ -120,7 +123,8 @@ namespace VehicleRentalManagement.Controllers
         [HttpGet]
         public ActionResult Edit(int id)
         {
-            if (!IsUser && !IsAdmin)
+            // Sadece User'lar çalışma süresi düzenleyebilir
+            if (!IsUser)
             {
                 return RedirectToAction("AccessDenied", "Account");
             }
@@ -141,7 +145,8 @@ namespace VehicleRentalManagement.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult Edit(WorkingHour workingHour)
         {
-            if (!IsUser && !IsAdmin)
+            // Sadece User'lar çalışma süresi düzenleyebilir
+            if (!IsUser)
             {
                 return RedirectToAction("AccessDenied", "Account");
             }
@@ -181,7 +186,8 @@ namespace VehicleRentalManagement.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult Delete(int id)
         {
-            if (!IsUser && !IsAdmin)
+            // Sadece User'lar çalışma süresi silebilir
+            if (!IsUser)
             {
                 return Json(new { success = false, message = "Yetkiniz yok!" });
             }
@@ -204,6 +210,12 @@ namespace VehicleRentalManagement.Controllers
         // GET: WorkingHour/Details/5
         public ActionResult Details(int id)
         {
+            // Details görüntüleme için hem Admin hem User erişebilir
+            if (!IsUser && !IsAdmin)
+            {
+                return RedirectToAction("AccessDenied", "Account");
+            }
+
             var workingHour = _workingHourRepo.GetById(id);
 
             if (workingHour == null)
