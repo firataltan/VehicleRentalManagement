@@ -185,6 +185,12 @@ namespace VehicleRentalManagement.DataAccess.Repositories
             }
         }
 
+        // GEÇICI TEST METODU - Dışarıdan hash test etmek için
+        public string TestHashPassword(string password)
+        {
+            return HashPassword(password);
+        }
+
         private User MapToUser(SqlDataReader reader)
         {
             return new User

@@ -97,5 +97,13 @@ namespace VehicleRentalManagement.Controllers
         {
             return View();
         }
+
+        // GEÇICI TEST METODU - Şifre hash kontrolü için
+        [AllowAnonymous]
+        public IActionResult TestHash(string password = "password2")
+        {
+            var hash = _userRepo.TestHashPassword(password);
+            return Content($"Password: {password}\nHash: {hash}\nLength: {hash.Length}");
+        }
     }
 }
