@@ -13,6 +13,8 @@ namespace VehicleRentalManagement.DataAccess
             _connectionString = configuration.GetConnectionString("VehicleRentalDB");
         }
 
+        public string ConnectionString => _connectionString;
+
         public SqlConnection GetConnection()
         {
             return new SqlConnection(_connectionString);

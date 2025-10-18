@@ -228,7 +228,7 @@ namespace VehicleRentalManagement.Controllers
                     return Json(new { success = false, message = "Sadece kendi kayıtlarınızı silebilirsiniz!" });
                 }
 
-                if (_workingHourRepo.Delete(id))
+                if (_workingHourRepo.Delete(id, CurrentUserId))
                 {
                     return Json(new { success = true, message = "Çalışma süresi başarıyla silindi!" });
                 }

@@ -1,0 +1,324 @@
+@model IEnumerable<VehicleRentalManagement.Models.AuditLog>
+@{
+    ViewBag.Title = "İşlem Geçmişi (Audit Log)";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+    .page-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 20px;
+        padding: 2rem 2.5rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 8px 32px rgba(102, 126, 234, 0.3);
+    }
+
+    .filter-card {
+        background: white;
+        border-radius: 16px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    }
+
+    .stats-card {
+        background: white;
+        border-radius: 16px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    }
+
+    .stat-item {
+        text-align: center;
+        padding: 1rem;
+    }
+
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+
+    .stat-label {
+        color: #718096;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .stat-insert .stat-value { color: #48bb78; }
+    .stat-update .stat-value { color: #4299e1; }
+    .stat-delete .stat-value { color: #f56565; }
+
+    .table-card {
+        background: white;
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    }
+
+    .log-row {
+        transition: all 0.3s ease;
+        border-left: 4px solid transparent;
+    }
+
+    .log-row:hover {
+        background: linear-gradient(90deg, rgba(102, 126, 234, 0.05) 0%, transparent 100%);
+        border-left-color: #667eea;
+        transform: translateX(5px);
+    }
+
+    .action-badge {
+        padding: 0.4rem 1rem;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        display: inline-block;
+        min-width: 80px;
+        text-align: center;
+    }
+
+    .action-insert {
+        background: linear-gradient(135deg, #48bb78 0%, #38b2ac 100%);
+        color: white;
+    }
+
+    .action-update {
+        background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
+        color: white;
+    }
+
+    .action-delete {
+        background: linear-gradient(135deg, #f56565 0%, #e53e3e 100%);
+        color: white;
+    }
+
+    .table-badge {
+        padding: 0.3rem 0.8rem;
+        border-radius: 8px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        background: #f7fafc;
+        color: #4a5568;
+        border: 1px solid #e2e8f0;
+    }
+
+    .value-display {
+        background: #f7fafc;
+        padding: 0.5rem;
+        border-radius: 8px;
+        font-family: 'Courier New', monospace;
+        font-size: 0.85rem;
+        max-width: 300px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .value-old { border-left: 3px solid #f6ad55; }
+    .value-new { border-left: 3px solid #48bb78; }
+
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+    }
+
+    .empty-state i {
+        font-size: 5rem;
+        color: #e2e8f0;
+        margin-bottom: 1rem;
+    }
+</style>
+
+<div class="page-header">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h2 class="mb-2"><i class="fas fa-history me-2"></i>İşlem Geçmişi (Audit Log)</h2>
+            <p class="mb-0 opacity-75">Sistemde yapılan tüm değişiklikleri görüntüleyin</p>
+        </div>
+        <div>
+            <span class="badge bg-light text-dark fs-6">
+                <i class="fas fa-database me-2"></i>@Model.Count() Kayıt
+            </span>
+        </div>
+    </div>
+</div>
+
+@if (ViewBag.Statistics != null)
+{
+    var stats = ViewBag.Statistics as Dictionary<string, int>;
+    <div class="stats-card">
+        <div class="row">
+            <div class="col-md-4 stat-item stat-insert">
+                <div class="stat-value">
+                    <i class="fas fa-plus-circle me-2"></i>@(stats.ContainsKey("INSERT") ? stats["INSERT"] : 0)
+                </div>
+                <div class="stat-label">Ekleme İşlemi</div>
+                <small class="text-muted">Son 30 gün</small>
+            </div>
+            <div class="col-md-4 stat-item stat-update">
+                <div class="stat-value">
+                    <i class="fas fa-edit me-2"></i>@(stats.ContainsKey("UPDATE") ? stats["UPDATE"] : 0)
+                </div>
+                <div class="stat-label">Güncelleme İşlemi</div>
+                <small class="text-muted">Son 30 gün</small>
+            </div>
+            <div class="col-md-4 stat-item stat-delete">
+                <div class="stat-value">
+                    <i class="fas fa-trash me-2"></i>@(stats.ContainsKey("DELETE") ? stats["DELETE"] : 0)
+                </div>
+                <div class="stat-label">Silme İşlemi</div>
+                <small class="text-muted">Son 30 gün</small>
+            </div>
+        </div>
+    </div>
+}
+
+<div class="filter-card">
+    <form method="get" asp-action="Index">
+        <div class="row align-items-end">
+            <div class="col-md-3">
+                <label class="form-label"><i class="fas fa-table me-2"></i>Tablo</label>
+                <select name="tableName" class="form-select">
+                    <option value="">Tüm Tablolar</option>
+                    @if (ViewBag.TableName == "Vehicles")
+                    {
+                        <option value="Vehicles" selected>Vehicles (Araçlar)</option>
+                    }
+                    else
+                    {
+                        <option value="Vehicles">Vehicles (Araçlar)</option>
+                    }
+                    @if (ViewBag.TableName == "WorkingHours")
+                    {
+                        <option value="WorkingHours" selected>WorkingHours (Çalışma Saatleri)</option>
+                    }
+                    else
+                    {
+                        <option value="WorkingHours">WorkingHours (Çalışma Saatleri)</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label"><i class="fas fa-calendar me-2"></i>Başlangıç Tarihi</label>
+                <input type="date" name="startDate" class="form-control" value="@ViewBag.StartDate">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label"><i class="fas fa-calendar me-2"></i>Bitiş Tarihi</label>
+                <input type="date" name="endDate" class="form-control" value="@ViewBag.EndDate">
+            </div>
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="fas fa-search me-2"></i>Filtrele
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+
+@if (Model != null && Model.Any())
+{
+    <div class="table-card">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                    <tr>
+                        <th style="width: 80px;">ID</th>
+                        <th style="width: 120px;">İşlem</th>
+                        <th style="width: 150px;">Tablo</th>
+                        <th>Eski Değer</th>
+                        <th>Yeni Değer</th>
+                        <th style="width: 150px;">Kullanıcı</th>
+                        <th style="width: 180px;">Tarih</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var log in Model)
+                    {
+                        <tr class="log-row">
+                            <td><strong>#@log.RecordId</strong></td>
+                            <td>
+                                @if (log.Action == "INSERT")
+                                {
+                                    <span class="action-badge action-insert">
+                                        <i class="fas fa-plus-circle me-1"></i>EKLE
+                                    </span>
+                                }
+                                else if (log.Action == "UPDATE")
+                                {
+                                    <span class="action-badge action-update">
+                                        <i class="fas fa-edit me-1"></i>DÜZENLE
+                                    </span>
+                                }
+                                else if (log.Action == "DELETE")
+                                {
+                                    <span class="action-badge action-delete">
+                                        <i class="fas fa-trash me-1"></i>SİL
+                                    </span>
+                                }
+                            </td>
+                            <td>
+                                <span class="table-badge">
+                                    <i class="fas fa-database me-1"></i>@log.TableName
+                                </span>
+                            </td>
+                            <td>
+                                @if (!string.IsNullOrEmpty(log.OldValue))
+                                {
+                                    <div class="value-display value-old" title="@log.OldValue">
+                                        @log.OldValue
+                                    </div>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">-</span>
+                                }
+                            </td>
+                            <td>
+                                @if (!string.IsNullOrEmpty(log.NewValue))
+                                {
+                                    <div class="value-display value-new" title="@log.NewValue">
+                                        @log.NewValue
+                                    </div>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">-</span>
+                                }
+                            </td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-user-circle me-2 text-primary"></i>
+                                    <strong>@log.UserName</strong>
+                                </div>
+                            </td>
+                            <td>
+                                <div>
+                                    <i class="fas fa-calendar-alt me-1"></i>
+                                    @log.LogDate.ToString("dd.MM.yyyy")
+                                </div>
+                                <small class="text-muted">
+                                    <i class="fas fa-clock me-1"></i>
+                                    @log.LogDate.ToString("HH:mm:ss")
+                                </small>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}
+else
+{
+    <div class="table-card">
+        <div class="empty-state">
+            <i class="fas fa-clipboard-list"></i>
+            <h4>Seçili filtreye uygun kayıt bulunamadı</h4>
+            <p class="text-muted mb-4">Farklı filtre seçenekleri deneyebilirsiniz.</p>
+        </div>
+    </div>
+}
+

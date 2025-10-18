@@ -9,10 +9,12 @@ namespace VehicleRentalManagement.DataAccess.Repositories
     public class VehicleRepository : IRepository<Vehicle>
     {
         private readonly DatabaseConnection _db;
+        private readonly AuditLogRepository _auditLog;
 
         public VehicleRepository(DatabaseConnection db)
         {
             _db = db;
+            _auditLog = new AuditLogRepository(db.ConnectionString);
         }
 
         public IEnumerable<Vehicle> GetAll()
@@ -88,6 +90,7 @@ namespace VehicleRentalManagement.DataAccess.Repositories
 
         public int Add(Vehicle entity)
         {
+            int newId;
             using (var conn = _db.GetConnection())
             {
                 var query = @"INSERT INTO Vehicles (VehicleName, LicensePlate, IsActive, CreatedBy, CreatedDate)
@@ -103,13 +106,27 @@ namespace VehicleRentalManagement.DataAccess.Repositories
                     cmd.Parameters.AddWithValue("@CreatedDate", DateTime.Now);
 
                     conn.Open();
-                    return (int)cmd.ExecuteScalar();
+                    newId = (int)cmd.ExecuteScalar();
                 }
             }
+
+            // Audit Log
+            try
+            {
+                var newValues = $"Araç Adı: {entity.VehicleName}, Plaka: {entity.LicensePlate}";
+                _auditLog.LogAction("Vehicles", newId, "INSERT", null, newValues, entity.CreatedBy);
+            }
+            catch { /* Audit log hatası ana işlemi etkilememeli */ }
+
+            return newId;
         }
 
         public bool Update(Vehicle entity)
         {
+            // Audit log için eski değerleri al
+            var oldVehicle = GetById(entity.VehicleId);
+
+            bool result;
             using (var conn = _db.GetConnection())
             {
                 var query = @"UPDATE Vehicles 
@@ -128,11 +145,26 @@ namespace VehicleRentalManagement.DataAccess.Repositories
                     cmd.Parameters.AddWithValue("@ModifiedDate", DateTime.Now);
 
                     conn.Open();
-                    return cmd.ExecuteNonQuery() > 0;
+                    result = cmd.ExecuteNonQuery() > 0;
                 }
             }
+
+            // Audit Log
+            if (result && oldVehicle != null && entity.ModifiedBy.HasValue)
+            {
+                try
+                {
+                    var oldValues = $"Araç Adı: {oldVehicle.VehicleName}, Plaka: {oldVehicle.LicensePlate}";
+                    var newValues = $"Araç Adı: {entity.VehicleName}, Plaka: {entity.LicensePlate}";
+                    _auditLog.LogAction("Vehicles", entity.VehicleId, "UPDATE", oldValues, newValues, entity.ModifiedBy.Value);
+                }
+                catch { /* Audit log hatası ana işlemi etkilememeli */ }
+            }
+
+            return result;
         }
 
+        // Interface'den gelen Delete metodu - audit log olmadan
         public bool Delete(int id)
         {
             using (var conn = _db.GetConnection())
@@ -146,6 +178,40 @@ namespace VehicleRentalManagement.DataAccess.Repositories
                     return cmd.ExecuteNonQuery() > 0;
                 }
             }
+        }
+
+        // Audit log ile silme metodu (overload)
+        public bool Delete(int id, int deletedBy)
+        {
+            // Audit log için eski değerleri al
+            var vehicle = GetById(id);
+
+            bool result;
+            using (var conn = _db.GetConnection())
+            {
+                var query = "UPDATE Vehicles SET IsActive = 0 WHERE VehicleId = @VehicleId";
+
+                using (var cmd = new SqlCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue("@VehicleId", id);
+                    conn.Open();
+                    result = cmd.ExecuteNonQuery() > 0;
+                }
+            }
+
+            // Audit Log
+            if (result && vehicle != null)
+            {
+                try
+                {
+                    var oldValues = $"Araç Adı: {vehicle.VehicleName}, Plaka: {vehicle.LicensePlate}, Durum: Aktif";
+                    var newValues = $"Araç Adı: {vehicle.VehicleName}, Plaka: {vehicle.LicensePlate}, Durum: Pasif (Silindi)";
+                    _auditLog.LogAction("Vehicles", id, "DELETE", oldValues, newValues, deletedBy);
+                }
+                catch { /* Audit log hatası ana işlemi etkilememeli */ }
+            }
+
+            return result;
         }
 
         private Vehicle MapToVehicle(SqlDataReader reader)

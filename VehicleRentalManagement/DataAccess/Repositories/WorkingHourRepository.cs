@@ -9,10 +9,12 @@ namespace VehicleRentalManagement.DataAccess.Repositories
     public class WorkingHourRepository : IRepository<WorkingHour>
     {
         private readonly DatabaseConnection _db;
+        private readonly AuditLogRepository _auditLog;
 
         public WorkingHourRepository(DatabaseConnection db)
         {
             _db = db;
+            _auditLog = new AuditLogRepository(db.ConnectionString);
         }
 
         public IEnumerable<WorkingHour> GetAll()
@@ -112,6 +114,7 @@ namespace VehicleRentalManagement.DataAccess.Repositories
 
         public int Add(WorkingHour entity)
         {
+            int newId;
             using (var conn = _db.GetConnection())
             {
                 var query = @"INSERT INTO WorkingHours 
@@ -130,13 +133,27 @@ namespace VehicleRentalManagement.DataAccess.Repositories
                     cmd.Parameters.AddWithValue("@CreatedDate", DateTime.Now);
 
                     conn.Open();
-                    return (int)cmd.ExecuteScalar();
+                    newId = (int)cmd.ExecuteScalar();
                 }
             }
+
+            // Audit Log
+            try
+            {
+                var newValues = $"Tarih: {entity.RecordDate:dd.MM.yyyy}, Aktif: {entity.ActiveWorkingHours}h, Bakım: {entity.MaintenanceHours}h";
+                _auditLog.LogAction("WorkingHours", newId, "INSERT", null, newValues, entity.CreatedBy);
+            }
+            catch { /* Audit log hatası ana işlemi etkilememeli */ }
+
+            return newId;
         }
 
         public bool Update(WorkingHour entity)
         {
+            // Audit log için eski değerleri al
+            var oldRecord = GetById(entity.WorkingHourId);
+
+            bool result;
             using (var conn = _db.GetConnection())
             {
                 var query = @"UPDATE WorkingHours 
@@ -157,11 +174,30 @@ namespace VehicleRentalManagement.DataAccess.Repositories
                     cmd.Parameters.AddWithValue("@ModifiedDate", DateTime.Now);
 
                     conn.Open();
-                    return cmd.ExecuteNonQuery() > 0;
+                    result = cmd.ExecuteNonQuery() > 0;
                 }
             }
+
+            // Audit Log
+            if (result && oldRecord != null && entity.ModifiedBy.HasValue)
+            {
+                try
+                {
+                    var oldValues = $"Tarih: {oldRecord.RecordDate:dd.MM.yyyy}, Aktif: {oldRecord.ActiveWorkingHours}h, Bakım: {oldRecord.MaintenanceHours}h";
+                    var newValues = $"Tarih: {entity.RecordDate:dd.MM.yyyy}, Aktif: {entity.ActiveWorkingHours}h, Bakım: {entity.MaintenanceHours}h";
+                    _auditLog.LogAction("WorkingHours", entity.WorkingHourId, "UPDATE", oldValues, newValues, entity.ModifiedBy.Value);
+                }
+                catch (Exception ex) 
+                { 
+                    // Debug için exception'ı logla
+                    Console.WriteLine($"Audit log hatası: {ex.Message}");
+                }
+            }
+
+            return result;
         }
 
+        // Interface'den gelen Delete metodu - audit log olmadan
         public bool Delete(int id)
         {
             using (var conn = _db.GetConnection())
@@ -175,6 +211,39 @@ namespace VehicleRentalManagement.DataAccess.Repositories
                     return cmd.ExecuteNonQuery() > 0;
                 }
             }
+        }
+
+        // Audit log ile silme metodu (overload)
+        public bool Delete(int id, int deletedBy)
+        {
+            // Audit log için eski değerleri al
+            var record = GetById(id);
+
+            bool result;
+            using (var conn = _db.GetConnection())
+            {
+                var query = "DELETE FROM WorkingHours WHERE WorkingHourId = @WorkingHourId";
+
+                using (var cmd = new SqlCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue("@WorkingHourId", id);
+                    conn.Open();
+                    result = cmd.ExecuteNonQuery() > 0;
+                }
+            }
+
+            // Audit Log
+            if (result && record != null)
+            {
+                try
+                {
+                    var oldValues = $"Tarih: {record.RecordDate:dd.MM.yyyy}, Aktif: {record.ActiveWorkingHours}h, Bakım: {record.MaintenanceHours}h, Araç: {record.VehicleName}";
+                    _auditLog.LogAction("WorkingHours", id, "DELETE", oldValues, "Kayıt silindi", deletedBy);
+                }
+                catch { /* Audit log hatası ana işlemi etkilememeli */ }
+            }
+
+            return result;
         }
 
         public List<VehicleSummary> GetWeeklySummary()
@@ -350,3 +419,5 @@ namespace VehicleRentalManagement.DataAccess.Repositories
         }
     }
 }
+
+

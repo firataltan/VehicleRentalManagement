@@ -147,7 +147,7 @@ namespace VehicleRentalManagement.Controllers
 
             try
             {
-                if (_vehicleRepo.Delete(id))
+                if (_vehicleRepo.Delete(id, CurrentUserId))
                 {
                     return Json(new { success = true, message = "Araç başarıyla silindi!" });
                 }

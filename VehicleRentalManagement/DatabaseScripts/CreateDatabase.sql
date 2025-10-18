@@ -1,10 +1,4 @@
--- =============================================
--- Vehicle Rental Management System
--- Database Creation Script
--- =============================================
--- Bu script, projenin veritabanını sıfırdan oluşturur
--- Tabloları, view'ları ve örnek verileri içerir
--- =============================================
+ 
 
 USE master;
 GO
@@ -28,9 +22,9 @@ GO
 USE VehicleRentalDB;
 GO
 
--- =============================================
+
 -- 1. USERS TABLOSU
--- =============================================
+
 -- Kullanıcı bilgilerini ve kimlik doğrulama verilerini saklar
 
 CREATE TABLE Users (
@@ -48,9 +42,9 @@ GO
 PRINT 'Users tablosu oluşturuldu.';
 GO
 
--- =============================================
+
 -- 2. VEHICLES TABLOSU
--- =============================================
+
 -- Araç bilgilerini saklar
 
 CREATE TABLE Vehicles (
@@ -71,9 +65,9 @@ GO
 PRINT 'Vehicles tablosu oluşturuldu.';
 GO
 
--- =============================================
+
 -- 3. WORKINGHOURS TABLOSU
--- =============================================
+
 -- Günlük çalışma saati kayıtlarını saklar
 -- IdleHours: Computed column olarak otomatik hesaplanır
 
@@ -102,10 +96,10 @@ GO
 PRINT 'WorkingHours tablosu oluşturuldu (IdleHours computed column ile).';
 GO
 
--- =============================================
+
 -- 4. AUDITLOGS TABLOSU
--- =============================================
--- Sistem işlemlerini kayıt altına alır
+
+-- Sistem işlemlerni kayıt altına alır
 
 CREATE TABLE AuditLogs (
     AuditLogId INT IDENTITY(1,1) PRIMARY KEY,
@@ -123,9 +117,9 @@ GO
 PRINT 'AuditLogs tablosu oluşturuldu.';
 GO
 
--- =============================================
+
 -- 5. İNDEXLER
--- =============================================
+
 -- Performans iyileştirmeleri için indexler
 
 CREATE INDEX IX_WorkingHours_VehicleId ON WorkingHours(VehicleId);
@@ -138,11 +132,11 @@ GO
 PRINT 'İndexler oluşturuldu.';
 GO
 
--- =============================================
+
 -- 6. VIEW: vw_WeeklyVehicleSummary
--- =============================================
--- Son 7 günün araç bazlı özet istatistiklerini sunar
--- Yüzdeler her zaman toplamda %100 olacak şekilde hesaplanır
+
+-- Son 7 günün araç bazlı özet istatıstıklerini sunar
+-- Yüzdeler her zaman toplamda % 100 olacak şekilde hesaplanr
 
 CREATE VIEW vw_WeeklyVehicleSummary
 AS
@@ -199,9 +193,8 @@ GO
 PRINT 'vw_WeeklyVehicleSummary view oluşturuldu.';
 GO
 
--- =============================================
 -- 7. ÖRNEK VERİLER
--- =============================================
+
 
 -- Admin kullanıcı oluştur
 -- Username: admin
@@ -255,9 +248,9 @@ END
 PRINT 'Örnek çalışma saati kayıtları eklendi (Son 7 gün).';
 GO
 
--- =============================================
--- 8. VERİTABANI DURUM KONTROLÜ
--- =============================================
+
+-- 8. VERİTABANI DURUM KONTROLÜ Yapmak için:
+
 
 PRINT '';
 PRINT '=== VERİTABANI OLUŞTURMA TAMAMLANDI ===';
