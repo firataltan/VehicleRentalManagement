@@ -21,8 +21,11 @@ namespace VehicleRentalManagement.Controllers
         }
 
         // GET: WorkingHour
-        public ActionResult Index()
+        public ActionResult Index(DateTime? startDate, DateTime? endDate, int? vehicleId)
         {
+            // Debug için filtreleme parametrelerini logla
+            System.Diagnostics.Debug.WriteLine($"WorkingHourController.Index - startDate: {startDate}, endDate: {endDate}, vehicleId: {vehicleId}");
+            
             // Hem Admin hem User çalışma sürelerini görüntüleyebilir
             if (!IsUser && !IsAdmin)
             {
@@ -41,6 +44,69 @@ namespace VehicleRentalManagement.Controllers
                 // User sadece kendi kayıtlarını görür
                 workingHours = _workingHourRepo.GetByUserId(CurrentUserId);
             }
+
+            // Filtreleme uygula
+            var originalCount = workingHours.Count();
+            System.Diagnostics.Debug.WriteLine($"Filtreleme öncesi kayıt sayısı: {originalCount}");
+            
+            if (startDate.HasValue)
+            {
+                workingHours = workingHours.Where(w => w.RecordDate >= startDate.Value);
+                System.Diagnostics.Debug.WriteLine($"startDate filtresi uygulandı: {startDate.Value:yyyy-MM-dd}");
+            }
+
+            if (endDate.HasValue)
+            {
+                workingHours = workingHours.Where(w => w.RecordDate <= endDate.Value);
+                System.Diagnostics.Debug.WriteLine($"endDate filtresi uygulandı: {endDate.Value:yyyy-MM-dd}");
+            }
+
+            if (vehicleId.HasValue && vehicleId.Value > 0)
+            {
+                workingHours = workingHours.Where(w => w.VehicleId == vehicleId.Value);
+                System.Diagnostics.Debug.WriteLine($"vehicleId filtresi uygulandı: {vehicleId.Value}");
+            }
+            
+            var filteredCount = workingHours.Count();
+            System.Diagnostics.Debug.WriteLine($"Filtreleme sonrası kayıt sayısı: {filteredCount}");
+
+            // Araç listesini ViewBag'e ekle (filtreleme için)
+            try
+            {
+                var vehicles = _vehicleRepo.GetAll().ToList();
+                ViewBag.Vehicles = vehicles;
+                
+                // Debug için araç sayısını logla
+                System.Diagnostics.Debug.WriteLine($"WorkingHourController - Araç sayısı: {vehicles.Count}");
+                
+                // Eğer araç yoksa uyarı mesajı ekle
+                if (!vehicles.Any())
+                {
+                    TempData["WarningMessage"] = $"Hiç araç bulunamadı (Toplam: {vehicles.Count}). Önce araç eklemeniz gerekiyor. Admin olarak giriş yapıp Vehicle sayfasından araç ekleyebilirsiniz.";
+                }
+                else
+                {
+                    // Araç listesini debug için yazdır
+                    foreach (var vehicle in vehicles)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"Araç: {vehicle.VehicleName} - {vehicle.LicensePlate} (ID: {vehicle.VehicleId})");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"WorkingHourController - Araç listesi yüklenirken hata: {ex.Message}");
+                ViewBag.Vehicles = new List<Vehicle>();
+                TempData["ErrorMessage"] = "Araç listesi yüklenirken hata oluştu: " + ex.Message;
+            }
+            
+            // Filtreleme değerlerini ViewBag'e ekle (View'da değerleri korumak için)
+            ViewBag.FilterStartDate = startDate?.ToString("yyyy-MM-dd") ?? "";
+            ViewBag.FilterEndDate = endDate?.ToString("yyyy-MM-dd") ?? "";
+            ViewBag.FilterVehicleId = vehicleId ?? 0;
+            
+            // Admin durumunu ViewBag'e ekle
+            ViewBag.IsAdmin = IsAdmin;
 
             return View(workingHours);
         }

@@ -137,28 +137,65 @@
     </div>
 </div>
 
+@if (TempData["WarningMessage"] != null)
+{
+    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+        <i class="fas fa-exclamation-triangle me-2"></i>@TempData["WarningMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="fas fa-exclamation-circle me-2"></i>@TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
 <div class="filter-card">
     <div class="row align-items-end">
         <div class="col-md-3">
             <label class="form-label"><i class="fas fa-calendar me-2"></i>Başlangıç Tarihi</label>
-            <input type="date" id="filterStartDate" class="form-control" value="@DateTime.Today.AddDays(-7).ToString("yyyy-MM-dd")">
+            <input type="date" id="filterStartDate" class="form-control" value="@ViewBag.FilterStartDate">
         </div>
         <div class="col-md-3">
             <label class="form-label"><i class="fas fa-calendar me-2"></i>Bitiş Tarihi</label>
-            <input type="date" id="filterEndDate" class="form-control" value="@DateTime.Today.ToString("yyyy-MM-dd")">
+            <input type="date" id="filterEndDate" class="form-control" value="@ViewBag.FilterEndDate">
         </div>
         <div class="col-md-4">
             <label class="form-label"><i class="fas fa-car me-2"></i>Araç</label>
             <select id="filterVehicle" class="form-select">
                 <option value="">Tüm Araçlar</option>
-                @foreach (var vehicle in ViewBag.Vehicles as IEnumerable<VehicleRentalManagement.Models.Vehicle> ?? Enumerable.Empty<VehicleRentalManagement.Models.Vehicle>())
+                @{
+                    var vehicleList = ViewBag.Vehicles as IEnumerable<VehicleRentalManagement.Models.Vehicle> ?? Enumerable.Empty<VehicleRentalManagement.Models.Vehicle>();
+                    System.Diagnostics.Debug.WriteLine($"View'da araç sayısı: {vehicleList.Count()}");
+                    
+                    // Debug için araç listesini yazdır
+                    foreach (var v in vehicleList)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"View'da araç: {v.VehicleName} - {v.LicensePlate}");
+                    }
+                }
+                @foreach (var vehicle in vehicleList)
                 {
-                    <option value="@vehicle.VehicleId">@vehicle.VehicleName - @vehicle.LicensePlate</option>
+                    var isSelected = ViewBag.FilterVehicleId == vehicle.VehicleId ? "selected" : "";
+                    <option value="@vehicle.VehicleId" selected="@isSelected">
+                        @vehicle.VehicleName - @vehicle.LicensePlate
+                    </option>
                 }
             </select>
+            @if (!vehicleList.Any())
+            {
+                <small class="text-warning">⚠️ Hiç araç bulunamadı (Toplam: @vehicleList.Count()). Önce araç eklemeniz gerekiyor.</small>
+            }
+            else
+            {
+                <small class="text-success">✅ @vehicleList.Count() araç bulundu</small>
+            }
         </div>
         <div class="col-md-2">
-            <button type="button" class="btn btn-primary w-100" onclick="filterRecords()">
+            <button type="button" class="btn btn-primary w-100" id="filterBtn" onclick="filterRecords()">
                 <i class="fas fa-search me-2"></i>Filtrele
             </button>
         </div>
@@ -330,17 +367,54 @@ else
         });
 
         function filterRecords() {
+            console.log('filterRecords fonksiyonu çağrıldı!');
+            
             var startDate = $('#filterStartDate').val();
             var endDate = $('#filterEndDate').val();
             var vehicleId = $('#filterVehicle').val();
 
-            var url = '@Url.Action("Index", "WorkingHour")' + '?';
-            if (startDate) url += 'startDate=' + startDate + '&';
-            if (endDate) url += 'endDate=' + endDate + '&';
-            if (vehicleId) url += 'vehicleId=' + vehicleId;
+            console.log('Filtreleme değerleri:', {
+                startDate: startDate,
+                endDate: endDate,
+                vehicleId: vehicleId
+            });
 
+            // URL parametrelerini daha güvenli şekilde oluştur
+            var params = new URLSearchParams();
+            
+            if (startDate && startDate.trim() !== '') {
+                params.append('startDate', startDate);
+            }
+            
+            if (endDate && endDate.trim() !== '') {
+                params.append('endDate', endDate);
+            }
+            
+            if (vehicleId && vehicleId !== '' && vehicleId !== '0') {
+                params.append('vehicleId', vehicleId);
+            }
+
+            var url = '@Url.Action("Index", "WorkingHour")';
+            if (params.toString()) {
+                url += '?' + params.toString();
+            }
+
+            console.log('Filtreleme URL:', url);
             window.location.href = url;
         }
+        
+        // Sayfa yüklendiğinde test
+        $(document).ready(function() {
+            console.log('Sayfa yüklendi, jQuery çalışıyor');
+            console.log('Filtreleme butonu:', $('#filterStartDate').length);
+            console.log('Filter butonu:', $('#filterBtn').length);
+            
+            // jQuery ile de event listener ekle
+            $('#filterBtn').click(function() {
+                console.log('jQuery ile buton tıklandı!');
+                filterRecords();
+            });
+        });
     </script>
     @Html.AntiForgeryToken()
 }
