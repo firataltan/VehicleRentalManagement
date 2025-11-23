@@ -61,11 +61,12 @@
 #*.PDF   diff=astextplain
 #*.rtf   diff=astextplain
 #*.RTF   diff=astextplain
-# GitHub Linguist ayarları – HTML/CSS/JS dosyalarını istatistiklere dahil etme
-*.html linguist-detectable=false
-*.css linguist-detectable=false
-*.js linguist-detectable=false
+# Linguist'in bu dosyaları yoksaymasını (ignore etmesini) sağlar.
+# Bu, HTML/CSS/JS'in istatistiklerdeki payını azaltacaktır.
+*.html linguist-vendored
+*.css linguist-vendored
+*.js linguist-vendored
 
-# C# dosyaları asıl dil olarak sayılacak
+# Bu, projenizdeki C# dosyalarının birincil dil olarak sayılmasına yardımcı olur.
+# (Genellikle gerekli değildir, ancak yoksayma ile birlikte kullanılabilir)
 *.cs linguist-language=C#
-
