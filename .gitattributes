@@ -61,9 +61,11 @@
 #*.PDF   diff=astextplain
 #*.rtf   diff=astextplain
 #*.RTF   diff=astextplain
+# GitHub Linguist ayarları – HTML/CSS/JS dosyalarını istatistiklere dahil etme
 *.html linguist-detectable=false
 *.css linguist-detectable=false
 *.js linguist-detectable=false
 
 # C# dosyaları asıl dil olarak sayılacak
 *.cs linguist-language=C#
+
